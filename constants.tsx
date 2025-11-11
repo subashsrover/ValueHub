@@ -4,126 +4,6 @@ import {
     CheckCircleIcon, SparklesIcon, ShieldCheckIcon, ZapIcon
 } from './components/icons';
 
-const TOOL_DESCRIPTIONS: { [key: string]: string } = {
-    // 1-Year Plans
-    "PromptDrive.ai (Teams / Business)": "An advanced AI prompt management and collaboration platform designed for teams to store, optimize, and share prompts securely.",
-    "Postman (Basic)": "A powerful API development environment for building, testing, and monitoring APIs collaboratively.",
-    "Cal.com (Teams / Organization)": "An open-source scheduling platform that simplifies booking meetings, managing team calendars, and automating workflows.",
-    "ClickUp (Enterprise)": "A complete productivity suite that unites tasks, docs, goals, and chat for seamless project management across teams.",
-    "Otter.ai (Pro)": "AI-powered transcription software that automatically records and generates accurate meeting notes in real time.",
-    "Fireflies.ai (Pro)": "A meeting assistant that records, transcribes, and summarizes calls across video platforms to boost team productivity.",
-    "Slidebean (Starter)": "AI presentation software that designs pitch decks and business slides automatically using brand-aligned visuals.",
-    "Descript (Creator)": "An intuitive audio and video editor that works like a text document—edit words to edit media content instantly.",
-    "Mobbin (Pro)": "A curated library of real-world mobile app designs and user flows for UX/UI inspiration and research.",
-    "Lovable (Pro / 100 Credits per month)": "An AI-powered coding assistant that builds entire apps from simple prompts with editable React and Next.js output.",
-    "Replit (Core)": "A collaborative cloud-based IDE that allows developers to code, run, and host full-stack apps directly from the browser.",
-    "N8N (Starter)": "A powerful workflow automation platform that connects apps and APIs through no-code or low-code integrations.",
-    "Devin AI (Core)": "An autonomous AI software engineer that can plan, code, debug, and ship complete software projects.",
-    "Gamma AI (Pro)": "An AI presentation and document generator that creates visually engaging decks and web pages in minutes.",
-    "Lex (Pro)": "An AI-powered writing assistant for crafting polished articles, documents, and creative writing pieces efficiently.",
-    "Granola (Business)": "A smart meeting notes assistant that automatically captures, organizes, and syncs meeting highlights across tools.",
-    "Linear (Business)": "A fast and elegant project management tool built for software teams to manage sprints, issues, and product roadmaps.",
-    "Linear (Basic)": "A streamlined project management tool for modern software teams to track issues, manage sprints, and build momentum.",
-    "Superhuman (Starter)": "An ultra-fast email experience that enhances productivity with AI-powered insights and automation.",
-    "Raycast (Pro)": "A productivity launcher for macOS that accelerates workflows with commands, extensions, and AI capabilities.",
-    "Wispr Flow (Pro)": "An AI voice workspace that lets teams brainstorm, plan, and automate tasks through natural conversations.",
-    "Warp (Pro)": "A next-generation terminal built for developers, combining speed, collaboration, and AI assistance.",
-    "Magic Patterns (Hobby)": "AI-driven design and pattern generation tool for UI components and digital assets.",
-    "Gumloop (Solo)": "A no-code automation builder that lets users create workflows between data sources and AI models.",
-    "Make.com (Team Plan)": "A visual automation platform to connect apps, APIs, and databases without writing code.",
-    "DataCamp (Premium)": "An interactive learning platform for mastering data science, Python, R, and machine learning.",
-    "Adobe Creative Cloud (Pro Plus)": "A complete suite of industry-leading creative tools for design, video, photo, and web development.",
-    "Bitwarden (Premium + Family Plan)": "A secure password manager that enables safe credential sharing across individuals and teams.",
-    "Backblaze (Cloud Unlimited Backup)": "Unlimited, automated cloud backup for data protection and disaster recovery.",
-    "Flixier (Pro)": "A cloud-based video editor for creating, collaborating, and exporting videos at lightning speed.",
-    "Mermaid Chart (Pro)": "A diagramming tool that generates flowcharts, sequence diagrams, and Gantt charts using markdown syntax.",
-    "Tilda (Personal)": "A design-centric website builder that enables the creation of stunning responsive websites without coding.",
-    "No Code MBA (Unlimited)": "An educational platform offering practical tutorials for building apps and businesses using no-code tools.",
-    "Beautiful.ai (Pro)": "An AI presentation tool that automatically designs professional, on-brand slides.",
-    "JetBrains All Products (Edu Pack)": "A full suite of developer tools for code editing, debugging, and software development across multiple languages.",
-    "Zeplin (Advanced)": "A design handoff platform bridging designers and developers with organized, inspectable design files.",
-    "Miro (Starter 1 Seat)": "A collaborative online whiteboard platform for brainstorming, strategy, and visual project mapping.",
-    "Neo.space (Starter Bundle)": "An AI workspace combining meetings, documents, and team collaboration into one unified platform.",
-    "Speechify (Premium)": "An advanced text-to-speech tool that converts any text into natural-sounding audio for productivity and accessibility.",
-    "Zoom (Pro)": "A reliable cloud platform for video and audio conferencing, collaboration, chat, and webinars across mobile devices, desktops, telephones, and room systems.",
-
-    // 6-Month Plans
-    "Requestly (Pro)": "A developer productivity tool to intercept, modify, and debug network requests for web applications in real-time.",
-    "Asana (Advanced)": "A powerful project management platform that helps teams organize workflows, track goals, and automate processes.",
-    "Notion Business + AI (Business)": "An all-in-one workspace that combines docs, databases, project management, and AI-powered writing and organization.",
-    "Keyword Hero (Big / Giant / Ultimate Hero)": "An SEO analytics platform that reveals hidden Google keyword data directly in Google Analytics for improved insights.",
-    "Pixpa (Pro)": "A portfolio and website builder for creatives to showcase work, sell online, and manage client projects seamlessly.",
-    "CreeperSEOAudit (Standard / Pro)": "An SEO auditing tool that analyzes website performance, detects issues, and optimizes site health for better rankings.",
-    "Sentry.io (Teams)": "A monitoring and error-tracking tool for developers to identify and fix bugs across web and mobile apps in real time.",
-
-    // 3-Month Plans
-    "Miro (Business)": "The business-tier version of Miro offering advanced collaboration, user management, and integration features.",
-    "Headliner (Pro)": "A video creation platform for podcasters and marketers to turn audio clips into shareable social media videos.",
-    "Trace (Pro / Teams)": "An AI-driven brand design platform that generates logos, brand kits, and visual identities automatically.",
-    "Clipping Mini (Business)": "A professional background removal and image editing tool designed for eCommerce and digital media.",
-    "Frame.io (Teams)": "A collaborative cloud video review and approval platform for creative teams and video editors.",
-    "ZapDigits (Creator / Startup / Scale)": "An AI-powered contact enrichment platform that helps businesses build verified lead databases efficiently.",
-    "LinkedIn Business / Career (Premium)": "Premium LinkedIn access for professionals to enhance networking, recruitment, and visibility.",
-    "Hootsuite (Standard)": "A leading social media management platform for scheduling, publishing, and analyzing content performance.",
-
-    // 2-Month Plans
-    "Lovable (Pro)": "An AI development assistant that turns simple prompts into full-fledged web applications instantly.",
-    "FlutterFlow (Premium)": "A visual app builder for creating cross-platform Flutter apps with drag-and-drop simplicity and backend integration.",
-    "CodeRabbit (Pro)": "An AI code reviewer and assistant that analyzes pull requests, detects issues, and suggests real-time code improvements.",
-    
-    // 1-Month Plans
-    "Jasper AI (Pro)": "An advanced AI writing tool that generates high-quality marketing copy, blogs, and creative content instantly.",
-    "Full Enrich (Pro)": "A data enrichment platform that enhances contact lists with verified business and demographic information.",
-    "Lex (Pro Trial)": "A limited-time trial of Lex AI for advanced writing assistance and content structuring.",
-    "CodeRabbit (Pro Trial)": "Trial version of CodeRabbit AI for testing automated code review features.",
-    "Expo.dev (Starter)": "A developer platform for building, deploying, and managing React Native apps efficiently.",
-    "Outbox AI (Agency Plus)": "An AI-powered outreach automation platform that personalizes and optimizes email campaigns.",
-    "Fabrile (Teams)": "A collaborative tool for design and creative teams to manage branding assets and project pipelines.",
-    "Augie Studio (Unlimited)": "An AI video generation tool that turns text and ideas into studio-quality videos.",
-    "Kickresume (Premium)": "An AI resume and cover letter builder that helps professionals create standout job applications.",
-    "Quillbot (Premium)": "A paraphrasing and grammar correction tool that enhances writing clarity, tone, and fluency.",
-    "Originality.ai (Pro)": "An AI content detector that identifies plagiarism and AI-generated text with high accuracy.",
-    "Viral Launch (Core / Growth)": "An Amazon product research and analytics suite for optimizing listings and maximizing eCommerce sales.",
-    "Humanic AI (Growth / Scale)": "An AI growth automation platform that helps startups analyze user data and personalize customer engagement.",
-    "Cosine.sh (Hobby / Pro)": "A modern analytics and observability platform designed for developers and SaaS teams.",
-    "Creator Hooks Pro (Pro)": "A content idea generator that uses SEO data and viral trends to craft engaging YouTube and blog topics.",
-    "Later for Reddit (Creator)": "A post-scheduling tool for Reddit marketers and creators to automate content sharing and analytics.",
-    "ImageKit.io (Pro)": "A real-time image optimization and CDN service for delivering fast, responsive visual content.",
-    "Cloudinary (Plus)": "A cloud-based media management platform for storing, optimizing, and transforming images and videos.",
-    "Wordtune (Unlimited)": "An AI-powered writing assistant that improves tone, clarity, and flow for any type of written content.",
-    "Phantombuster (Starter)": "A data automation and web scraping tool to extract and enrich data from social networks and websites.",
-    "Typefully (Creator / Team / Agency)": "A writing and scheduling tool for creating and publishing Twitter/X threads with AI suggestions.",
-    "Trace (Pro Trial)": "Trial version of the Trace AI branding suite for automated logo and design generation.",
-    "Screenspace.io (Launch)": "A visual mockup tool for showcasing app designs inside realistic device frames.",
-    "Paperpal (Prime)": "An AI proofreading assistant that improves academic and professional writing instantly.",
-    "Jenni AI (Unlimited)": "An AI writing assistant built for research and academic work with citations and structured outputs.",
-    "Whizlabs (Premium / Premium Plus)": "An online learning platform offering courses and certifications in cloud, DevOps, and software development.",
-    "Dev.to (Plus Plus)": "A premium membership for developers to publish, network, and access exclusive coding resources.",
-    "Airtable (Teams / Business Trial)": "A hybrid database and spreadsheet tool for managing projects, data, and workflows collaboratively.",
-    "Fireflies.ai (Business)": "Business-tier meeting assistant for call recording, transcription, and searchable conversation insights.",
-    "Ebookmaker.ai (Starter / Creator / Enterprise)": "An AI-powered tool for generating, designing, and formatting eBooks from simple prompts.",
-    "Windsurf (Pro)": "An AI coding environment that offers intelligent code completion, context search, and project insights.",
-    "Jeeva AI (Scale)": "An AI-driven analytics platform for process automation, forecasting, and workflow optimization.",
-    "Scalelist (Scaler 3000 Credits)": "A lead generation platform that provides verified B2B contact data using AI-powered research.",
-    "Famous.ai (Mini / Spark / Lift-Off)": "An AI ad generator that produces conversion-optimized creatives and landing pages for social media.",
-    "Exa AI Websets (Starter 14 Days)": "An AI platform that builds SEO-ready websites from text prompts within minutes.",
-    "Rork (Junior)": "A lightweight AI assistant for automating daily productivity and research tasks.",
-
-    // Lifetime Plans
-    "PNGTree (Premium)": "Unlimited access to high-quality PNGs, vectors, and templates for design and creative projects.",
-    "Rezi AI (Lifetime)": "An AI-powered resume builder that automatically optimizes resumes for ATS systems.",
-    "Microsoft Office 365 (A1 License)": "The full Microsoft productivity suite including Word, Excel, PowerPoint, and cloud storage via OneDrive.",
-    "The-BitHub.com (Elite)": "A developer resource hub offering premium GitHub project templates, utilities, and code repositories.",
-    "Webflow (Growth)": "A powerful no-code website builder that merges visual design with professional-grade CMS and hosting.",
-    "Enginemailer (Free Forever – 10K/Month)": "An email marketing platform with generous free limits for campaign management and automation.",
-    
-    // Credit-Based / Bundles
-    "AWS ($100 Credits + Kiro.dev Access)": "Amazon Web Services cloud credits for hosting, deploying, and scaling applications globally.",
-    "Deepgram AI (1199 Credits – 12 Months)": "An advanced speech-to-text API for real-time transcription and audio analysis.",
-    "Vapi (200 USD Credits – 12 Months)": "A voice AI platform for building intelligent voice applications and assistants.",
-    "Confluent Cloud ($2000 Credit)": "A managed Apache Kafka platform for building real-time event streaming and data pipelines.",
-};
-
 export const BENEFITS: Benefit[] = [
   {
     icon: <CheckCircleIcon className="w-12 h-12 text-secondary" />,
@@ -147,130 +27,187 @@ export const BENEFITS: Benefit[] = [
   }
 ];
 
+export const CATEGORY_DESCRIPTIONS: { [key: string]: string } = {
+  "🧠 AI & Automation Tools": "Tools that leverage artificial intelligence for automation, content generation, or workflow optimization.",
+  "🎨 Design, Video & Creative Tools": "For design, presentation, video editing, and visual creation.",
+  "💼 Productivity, Project Management & Collaboration": "Platforms that help teams organize tasks, meetings, and work processes.",
+  "👨‍💻 Developer & Engineering Tools": "Tools for coding, software development, API management, and automation.",
+  "📈 Marketing, Growth & SEO Tools": "Tools to grow, optimize, and analyze brand and marketing performance.",
+  "📚 Education & Learning Platforms": "Learning and certification tools for upskilling in tech, business, and design.",
+  "☁️ Cloud, Storage & Security": "Tools that ensure data safety, security, and hosting scalability.",
+  "🧱 3D, CAD & Engineering Suites": "High-end design and simulation platforms for engineers, manufacturers, and product designers.",
+  "♾️ Lifetime Access Tools": "Perpetual access licenses to professional-grade platforms."
+};
+
+export const CATEGORIES: string[] = Object.keys(CATEGORY_DESCRIPTIONS);
+export const DURATIONS: string[] = ['All Durations', '1 Year', '6 Months', '3 Months', '2 Months', '1 Month', 'Lifetime'];
+
 const rawToolData = [
-  { category: "1-Year Plans", name: "PromptDrive.ai (Teams / Business)", domain: "promptdrive.ai" },
-  { category: "1-Year Plans", name: "Postman (Basic)", domain: "postman.com" },
-  { category: "1-Year Plans", name: "Cal.com (Teams / Organization)", domain: "cal.com" },
-  { category: "1-Year Plans", name: "ClickUp (Enterprise)", domain: "clickup.com" },
-  { category: "1-Year Plans", name: "Otter.ai (Pro)", domain: "otter.ai" },
-  { category: "1-Year Plans", name: "Fireflies.ai (Pro)", domain: "fireflies.ai" },
-  { category: "1-Year Plans", name: "Slidebean (Starter)", domain: "slidebean.com" },
-  { category: "1-Year Plans", name: "Descript (Creator)", domain: "descript.com" },
-  { category: "1-Year Plans", name: "Mobbin (Pro)", domain: "mobbin.com" },
-  { category: "1-Year Plans", name: "Lovable (Pro / 100 Credits per month)", domain: "lovable.dev" },
-  { category: "1-Year Plans", name: "Replit (Core)", domain: "replit.com" },
-  { category: "1-Year Plans", name: "N8N (Starter)", domain: "n8n.io" },
-  { category: "1-Year Plans", name: "Devin AI (Core)", domain: "cognition.ai" },
-  { category: "1-Year Plans", name: "Gamma AI (Pro)", domain: "gamma.app" },
-  { category: "1-Year Plans", name: "Lex (Pro)", domain: "lex.page" },
-  { category: "1-Year Plans", name: "Granola (Business)", domain: "granola.so" },
-  { category: "1-Year Plans", name: "Linear (Business)", domain: "linear.app" },
-  { category: "1-Year Plans", name: "Linear (Basic)", domain: "linear.app" },
-  { category: "1-Year Plans", name: "Superhuman (Starter)", domain: "superhuman.com" },
-  { category: "1-Year Plans", name: "Raycast (Pro)", domain: "raycast.com" },
-  { category: "1-Year Plans", name: "Wispr Flow (Pro)", domain: "wispr.xyz" },
-  { category: "1-Year Plans", name: "Warp (Pro)", domain: "warp.dev" },
-  { category: "1-Year Plans", name: "Magic Patterns (Hobby)", domain: "magicpatterns.com" },
-  { category: "1-Year Plans", name: "Gumloop (Solo)", domain: "gumloop.com" },
-  { category: "1-Year Plans", name: "Make.com (Team Plan)", domain: "make.com" },
-  { category: "1-Year Plans", name: "DataCamp (Premium)", domain: "datacamp.com" },
-  { category: "1-Year Plans", name: "Adobe Creative Cloud (Pro Plus)", domain: "adobe.com" },
-  { category: "1-Year Plans", name: "Bitwarden (Premium + Family Plan)", domain: "bitwarden.com" },
-  { category: "1-Year Plans", name: "Backblaze (Cloud Unlimited Backup)", domain: "backblaze.com" },
-  { category: "1-Year Plans", name: "Flixier (Pro)", domain: "flixier.com" },
-  { category: "1-Year Plans", name: "Mermaid Chart (Pro)", domain: "mermaidchart.com" },
-  { category: "1-Year Plans", name: "Tilda (Personal)", domain: "tilda.cc" },
-  { category: "1-Year Plans", name: "No Code MBA (Unlimited)", domain: "nocode.mba" },
-  { category: "1-Year Plans", name: "Beautiful.ai (Pro)", domain: "beautiful.ai" },
-  { category: "1-Year Plans", name: "JetBrains All Products (Edu Pack)", domain: "jetbrains.com" },
-  { category: "1-Year Plans", name: "Zeplin (Advanced)", domain: "zeplin.io" },
-  { category: "1-Year Plans", name: "Zoom (Pro)", domain: "zoom.us", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/a/a2/Zoom_logo.svg" },
-  { category: "1-Year Plans", name: "Miro (Starter 1 Seat)", domain: "miro.com" },
-  { category: "1-Year Plans", name: "Neo.space (Starter Bundle)", domain: "neo.space" },
-  { category: "1-Year Plans", name: "Speechify (Premium)", domain: "speechify.com" },
-  { category: "6-Month Plans", name: "Requestly (Pro)", domain: "requestly.io" },
-  { category: "6-Month Plans", name: "Asana (Advanced)", domain: "asana.com" },
-  { category: "6-Month Plans", name: "Notion Business + AI (Business)", domain: "notion.so" },
-  { category: "6-Month Plans", name: "Keyword Hero (Big / Giant / Ultimate Hero)", domain: "keyword-hero.com" },
-  { category: "6-Month Plans", name: "Pixpa (Pro)", domain: "pixpa.com" },
-  { category: "6-Month Plans", name: "CreeperSEOAudit (Standard / Pro)", domain: "creeper.com" },
-  { category: "6-Month Plans", name: "Sentry.io (Teams)", domain: "sentry.io" },
-  { category: "3-Month Plans", name: "Miro (Business)", domain: "miro.com" },
-  { category: "3-Month Plans", name: "Headliner (Pro)", domain: "headliner.app" },
-  { category: "3-Month Plans", name: "Trace (Pro / Teams)", domain: "trace.      " },
-  { category: "3-Month Plans", name: "Clipping Mini (Business)", domain: "clippingmini.com" },
-  { category: "3-Month Plans", name: "Frame.io (Teams)", domain: "frame.io" },
-  { category: "3-Month Plans", name: "ZapDigits (Creator / Startup / Scale)", domain: "zapdigits.com" },
-  { category: "3-Month Plans", name: "LinkedIn Business / Career (Premium)", domain: "linkedin.com" },
-  { category: "3-Month Plans", name: "Hootsuite (Standard)", domain: "hootsuite.com" },
-  { category: "2-Month Plans", name: "Lovable (Pro)", domain: "lovable.dev" },
-  { category: "2-Month Plans", name: "FlutterFlow (Premium)", domain: "flutterflow.io" },
-  { category: "2-Month Plans", name: "CodeRabbit (Pro)", domain: "coderabbit.ai" },
-  { category: "1-Month Plans", name: "Jasper AI (Pro)", domain: "jasper.ai" },
-  { category: "1-Month Plans", name: "Full Enrich (Pro)", domain: "fullenrich.com" },
-  { category: "1-Month Plans", name: "Lex (Pro Trial)", domain: "lex.page" },
-  { category: "1-Month Plans", name: "CodeRabbit (Pro Trial)", domain: "coderabbit.ai" },
-  { category: "1-Month Plans", name: "Expo.dev (Starter)", domain: "expo.dev" },
-  { category: "1-Month Plans", name: "Outbox AI (Agency Plus)", domain: "outbox.ai" },
-  { category: "1-Month Plans", name: "Fabrile (Teams)", domain: "fabrile.com" },
-  { category: "1-Month Plans", name: "Augie Studio (Unlimited)", domain: "augie.studio" },
-  { category: "1-Month Plans", name: "Kickresume (Premium)", domain: "kickresume.com" },
-  { category: "1-Month Plans", name: "Quillbot (Premium)", domain: "quillbot.com" },
-  { category: "1-Month Plans", name: "Originality.ai (Pro)", domain: "originality.ai" },
-  { category: "1-Month Plans", name: "Viral Launch (Core / Growth)", domain: "viral-launch.com" },
-  { category: "1-Month Plans", name: "Humanic AI (Growth / Scale)", domain: "humanic.ai" },
-  { category: "1-Month Plans", name: "Cosine.sh (Hobby / Pro)", domain: "cosine.sh" },
-  { category: "1-Month Plans", name: "Creator Hooks Pro (Pro)", domain: "creatorhooks.com" },
-  { category: "1-Month Plans", name: "Later for Reddit (Creator)", domain: "later.com" },
-  { category: "1-Month Plans", name: "ImageKit.io (Pro)", domain: "imagekit.io" },
-  { category: "1-Month Plans", name: "Cloudinary (Plus)", domain: "cloudinary.com" },
-  { category: "1-Month Plans", name: "Wordtune (Unlimited)", domain: "wordtune.com" },
-  { category: "1-Month Plans", name: "Phantombuster (Starter)", domain: "phantombuster.com" },
-  { category: "1-Month Plans", name: "Typefully (Creator / Team / Agency)", domain: "typefully.com" },
-  { category: "1-Month Plans", name: "Trace (Pro Trial)", domain: "trace.      " },
-  { category: "1-Month Plans", name: "Screenspace.io (Launch)", domain: "screenspace.io" },
-  { category: "1-Month Plans", name: "Paperpal (Prime)", domain: "paperpal.com" },
-  { category: "1-Month Plans", name: "Jenni AI (Unlimited)", domain: "jenni.ai" },
-  { category: "1-Month Plans", name: "Whizlabs (Premium / Premium Plus)", domain: "whizlabs.com" },
-  { category: "1-Month Plans", name: "Dev.to (Plus Plus)", domain: "dev.to" },
-  { category: "1-Month Plans", name: "Airtable (Teams / Business Trial)", domain: "airtable.com" },
-  { category: "1-Month Plans", name: "Fireflies.ai (Business)", domain: "fireflies.ai" },
-  { category: "1-Month Plans", name: "Ebookmaker.ai (Starter / Creator / Enterprise)", domain: "ebookmaker.ai" },
-  { category: "1-Month Plans", name: "Windsurf (Pro)", domain: "windsurf.dev" },
-  { category: "1-Month Plans", name: "Jeeva AI (Scale)", domain: "jeeva.ai" },
-  { category: "1-Month Plans", name: "Scalelist (Scaler 3000 Credits)", domain: "scalelist.com" },
-  { category: "1-Month Plans", name: "Famous.ai (Mini / Spark / Lift-Off)", domain: "famous.ai" },
-  { category: "1-Month Plans", name: "Exa AI Websets (Starter 14 Days)", domain: "exa.ai" },
-  { category: "1-Month Plans", name: "Rork (Junior)", domain: "rork.ai" },
-  { category: "Lifetime Plans", name: "PNGTree (Premium)", domain: "pngtree.com" },
-  { category: "Lifetime Plans", name: "Rezi AI (Lifetime)", domain: "rezi.ai" },
-  { category: "Lifetime Plans", name: "Microsoft Office 365 (A1 License)", domain: "microsoft.com" },
-  { category: "Lifetime Plans", name: "The-BitHub.com (Elite)", domain: "the-bithub.com" },
-  { category: "Lifetime Plans", name: "Webflow (Growth)", domain: "webflow.com" },
-  { category: "Lifetime Plans", name: "Enginemailer (Free Forever – 10K/Month)", domain: "enginemailer.com" },
-  { category: "Credit-Based / Bundles", name: "AWS ($100 Credits + Kiro.dev Access)", domain: "aws.amazon.com" },
-  { category: "Credit-Based / Bundles", name: "Deepgram AI (1199 Credits – 12 Months)", domain: "deepgram.com" },
-  { category: "Credit-Based / Bundles", name: "Vapi (200 USD Credits – 12 Months)", domain: "vapi.ai" },
-  { category: "Credit-Based / Bundles", name: "Confluent Cloud ($2000 Credit)", domain: "confluent.io" },
+  // AI & Automation Tools
+  { category: "🧠 AI & Automation Tools", name: "PromptDrive.ai", description: "AI prompt management for teams", domain: "promptdrive.ai", duration: "1 Year" },
+  { category: "🧠 AI & Automation Tools", name: "Devin AI", description: "Autonomous AI software engineer", domain: "cognition.ai", duration: "1 Year" },
+  { category: "🧠 AI & Automation Tools", name: "Lovable (Pro)", description: "AI app builder from text prompts", domain: "lovable.dev", duration: "2 Months" },
+  { category: "🧠 AI & Automation Tools", name: "Gamma AI (Pro)", description: "AI presentation & document creator", domain: "gamma.app", duration: "1 Year" },
+  { category: "🧠 AI & Automation Tools", name: "Lex (Pro)", description: "AI writing assistant", domain: "lex.page", duration: "1 Year" },
+  { category: "🧠 AI & Automation Tools", name: "Jasper AI (Pro)", description: "AI content and marketing copy generator", domain: "jasper.ai", duration: "1 Month" },
+  { category: "🧠 AI & Automation Tools", name: "Jenni (Unlimited)", description: "Academic and research AI writer", domain: "jenni.ai", duration: "1 Month" },
+  { category: "🧠 AI & Automation Tools", name: "Wordtune (Unlimited)", description: "AI writing improvement and rephrasing", domain: "wordtune.com", duration: "1 Month" },
+  { category: "🧠 AI & Automation Tools", name: "Quillbot (Premium)", description: "AI paraphrasing & grammar correction", domain: "quillbot.com", duration: "1 Month" },
+  { category: "🧠 AI & Automation Tools", name: "Originality.ai (Pro)", description: "AI & plagiarism detector", domain: "originality.ai", duration: "1 Month" },
+  { category: "🧠 AI & Automation Tools", name: "Outbox AI (Agency Plus)", description: "AI-powered outreach automation", domain: "outbox.ai", duration: "1 Month" },
+  { category: "🧠 AI & Automation Tools", name: "Trace (Pro / Trial)", description: "AI branding & logo generation", domain: "trace.com", duration: "3 Months" },
+  { category: "🧠 AI & Automation Tools", name: "Humanic AI (Growth / Scale)", description: "AI-driven customer analytics", domain: "humanic.ai", duration: "1 Month" },
+  { category: "🧠 AI & Automation Tools", name: "Famous.ai", description: "AI ad creative generator", domain: "famous.ai", duration: "1 Month" },
+  { category: "🧠 AI & Automation Tools", name: "Ebookmaker.ai", description: "AI eBook generation tool", domain: "ebookmaker.ai", duration: "1 Month" },
+  { category: "🧠 AI & Automation Tools", name: "Windsurf (Pro)", description: "AI-assisted coding environment", domain: "windsurf.dev", duration: "1 Month" },
+  { category: "🧠 AI & Automation Tools", name: "Rork (Junior)", description: "Lightweight AI productivity assistant", domain: "rork.ai", duration: "1 Month" },
+  { category: "🧠 AI & Automation Tools", name: "Cosine.sh (Pro)", description: "AI observability and analytics for developers", domain: "cosine.sh", duration: "1 Month" },
+  { category: "🧠 AI & Automation Tools", name: "Vapi ($200 Credits)", description: "Voice AI for intelligent assistants", domain: "vapi.ai", duration: "1 Year" },
+  { category: "🧠 AI & Automation Tools", name: "Deepgram AI (1199 Credits)", description: "AI speech-to-text and transcription", domain: "deepgram.com", duration: "1 Year" },
+  { category: "🧠 AI & Automation Tools", name: "Gumloop (Solo)", description: "AI-powered no-code workflow automation", domain: "gumloop.com", duration: "1 Year" },
+  { category: "🧠 AI & Automation Tools", name: "Wispr Flow (Pro)", description: "Voice-based AI workspace", domain: "wispr.xyz", duration: "1 Year" },
+  { category: "🧠 AI & Automation Tools", name: "Granola (Business)", description: "AI meeting notes summarizer", domain: "granola.so", duration: "1 Year" },
+  { category: "🧠 AI & Automation Tools", name: "Fireflies.ai (Pro / Business)", description: "AI meeting transcription & insights", domain: "fireflies.ai", duration: "1 Year" },
+  { category: "🧠 AI & Automation Tools", name: "Otter.ai (Pro)", description: "AI meeting recorder & transcriber", domain: "otter.ai", duration: "1 Year" },
+  { category: "🧠 AI & Automation Tools", name: "Augie Studio (Unlimited)", description: "AI video generation from text", domain: "augie.studio", duration: "1 Month" },
+  
+  // Design, Video & Creative Tools
+  { category: "🎨 Design, Video & Creative Tools", name: "Adobe Creative Cloud (Pro Plus)", description: "Full suite for design, photo & video", domain: "adobe.com", duration: "1 Year" },
+  { category: "🎨 Design, Video & Creative Tools", name: "Slidebean (Starter)", description: "AI-designed presentations & pitch decks", domain: "slidebean.com", duration: "1 Year" },
+  { category: "🎨 Design, Video & Creative Tools", name: "Beautiful.ai (Pro)", description: "Smart presentation designer", domain: "beautiful.ai", duration: "1 Year" },
+  { category: "🎨 Design, Video & Creative Tools", name: "Descript (Creator)", description: "Text-based audio/video editing", domain: "descript.com", duration: "1 Year" },
+  { category: "🎨 Design, Video & Creative Tools", name: "Flixier (Pro)", description: "Cloud video editor for creators", domain: "flixier.com", duration: "1 Year" },
+  { category: "🎨 Design, Video & Creative Tools", name: "Frame.io (Teams)", description: "Video collaboration & review platform", domain: "frame.io", duration: "3 Months" },
+  { category: "🎨 Design, Video & Creative Tools", name: "Screenspace.io (Launch)", description: "Device mockup generator for app showcases", domain: "screenspace.io", duration: "1 Month" },
+  { category: "🎨 Design, Video & Creative Tools", name: "Trace (Pro)", description: "AI branding & design tool", domain: "trace.com", duration: "3 Months" },
+  { category: "🎨 Design, Video & Creative Tools", name: "Mobbin (Pro)", description: "UI/UX inspiration library", domain: "mobbin.com", duration: "1 Year" },
+  { category: "🎨 Design, Video & Creative Tools", name: "Mermaid Chart (Pro)", description: "Diagram & flowchart generator", domain: "mermaidchart.com", duration: "1 Year" },
+  { category: "🎨 Design, Video & Creative Tools", name: "Magic Patterns (Hobby)", description: "AI UI pattern & design generator", domain: "magicpatterns.com", duration: "1 Year" },
+  { category: "🎨 Design, Video & Creative Tools", name: "PNGTree (Premium)", description: "Lifetime library of PNGs & design assets", domain: "pngtree.com", duration: "Lifetime" },
+  { category: "🎨 Design, Video & Creative Tools", name: "Zeplin (Advanced)", description: "Design-to-development handoff platform", domain: "zeplin.io", duration: "1 Year" },
+  { category: "🎨 Design, Video & Creative Tools", name: "3D Swymer + Suites", description: "Advanced 3D design, sculpting, and engineering", domain: "3ds.com", duration: "1 Year" },
+  { category: "🎨 Design, Video & Creative Tools", name: "Tilda (Personal)", description: "No-code design website builder", domain: "tilda.cc", duration: "1 Year" },
+  { category: "🎨 Design, Video & Creative Tools", name: "Pixpa (Pro)", description: "Portfolio & photography website builder", domain: "pixpa.com", duration: "6 Months" },
+  { category: "🎨 Design, Video & Creative Tools", name: "Trace (Trial)", description: "AI visual branding", domain: "trace.com", duration: "1 Month" },
+  { category: "🎨 Design, Video & Creative Tools", name: "Webflow (Growth)", description: "No-code web design & CMS platform", domain: "webflow.com", duration: "Lifetime" },
+
+  // Productivity, Project Management & Collaboration
+  { category: "💼 Productivity, Project Management & Collaboration", name: "ClickUp (Enterprise)", description: "Unified productivity & project management", domain: "clickup.com", duration: "1 Year" },
+  { category: "💼 Productivity, Project Management & Collaboration", name: "Asana (Advanced)", description: "Workflow & project organization", domain: "asana.com", duration: "6 Months" },
+  { category: "💼 Productivity, Project Management & Collaboration", name: "Linear (Business)", description: "Agile project tracking for software teams", domain: "linear.app", duration: "1 Year" },
+  { category: "💼 Productivity, Project Management & Collaboration", name: "Notion Business + AI", description: "All-in-one workspace for docs, databases, and AI notes", domain: "notion.so", duration: "6 Months" },
+  { category: "💼 Productivity, Project Management & Collaboration", name: "Miro (Starter / Business)", description: "Collaborative online whiteboard", domain: "miro.com", duration: "1 Year" },
+  { category: "💼 Productivity, Project Management & Collaboration", name: "Cal.com (Teams)", description: "Scheduling & booking automation", domain: "cal.com", duration: "1 Year" },
+  { category: "💼 Productivity, Project Management & Collaboration", name: "Superhuman (Starter)", description: "Fast, AI-powered email client", domain: "superhuman.com", duration: "1 Year" },
+  { category: "💼 Productivity, Project Management & Collaboration", name: "Raycast (Pro)", description: "macOS productivity launcher", domain: "raycast.com", duration: "1 Year" },
+  { category: "💼 Productivity, Project Management & Collaboration", name: "Neo.space (Starter Bundle)", description: "Unified AI workspace for teams", domain: "neo.space", duration: "1 Year" },
+  { category: "💼 Productivity, Project Management & Collaboration", name: "Bitwarden (Premium)", description: "Password management & security", domain: "bitwarden.com", duration: "1 Year" },
+  { category: "💼 Productivity, Project Management & Collaboration", name: "Requestly (Pro)", description: "Network debugging and modification tool", domain: "requestly.io", duration: "6 Months" },
+  { category: "💼 Productivity, Project Management & Collaboration", name: "Fabrile (Teams)", description: "Design asset and brand management", domain: "fabrile.com", duration: "1 Month" },
+  { category: "💼 Productivity, Project Management & Collaboration", name: "Typefully (Creator / Team)", description: "Content scheduling for Twitter/X", domain: "typefully.com", duration: "1 Month" },
+  { category: "💼 Productivity, Project Management & Collaboration", name: "LinkedIn Premium", description: "Professional productivity & career networking", domain: "linkedin.com", duration: "3 Months" },
+  
+  // Developer & Engineering Tools
+  { category: "👨‍💻 Developer & Engineering Tools", name: "Postman (Basic)", description: "API building and testing suite", domain: "postman.com", duration: "1 Year" },
+  { category: "👨‍💻 Developer & Engineering Tools", name: "Replit (Core)", description: "Collaborative cloud coding IDE", domain: "replit.com", duration: "1 Year" },
+  { category: "👨‍💻 Developer & Engineering Tools", name: "CodeRabbit (Pro / Trial)", description: "AI code review and analysis", domain: "coderabbit.ai", duration: "2 Months" },
+  { category: "👨‍💻 Developer & Engineering Tools", name: "Warp (Pro)", description: "Next-gen terminal for developers", domain: "warp.dev", duration: "1 Year" },
+  { category: "👨‍💻 Developer & Engineering Tools", name: "Expo.dev (Starter)", description: "React Native development toolkit", domain: "expo.dev", duration: "1 Month" },
+  { category: "👨‍💻 Developer & Engineering Tools", name: "JetBrains All Products (Edu)", description: "Complete developer tool suite", domain: "jetbrains.com", duration: "1 Year" },
+  { category: "👨‍💻 Developer & Engineering Tools", name: "Make.com (Team)", description: "Visual workflow and API integration builder", domain: "make.com", duration: "1 Year" },
+  { category: "👨‍💻 Developer & Engineering Tools", name: "N8N (Starter)", description: "Automation and data workflow builder", domain: "n8n.io", duration: "1 Year" },
+  { category: "👨‍💻 Developer & Engineering Tools", name: "AWS ($100 Credits)", description: "Cloud computing infrastructure", domain: "aws.amazon.com" },
+  { category: "👨‍💻 Developer & Engineering Tools", name: "Confluent Cloud ($2000 Credit)", description: "Real-time event streaming with Kafka", domain: "confluent.io" },
+  { category: "👨‍💻 Developer & Engineering Tools", name: "Sentry.io (Teams)", description: "Application error tracking and monitoring", domain: "sentry.io", duration: "6 Months" },
+  { category: "👨‍💻 Developer & Engineering Tools", name: "Phantombuster (Starter)", description: "Automation & scraping for developers", domain: "phantombuster.com", duration: "1 Month" },
+  { category: "👨‍💻 Developer & Engineering Tools", name: "Dev.to (Plus Plus)", description: "Developer community & publishing hub", domain: "dev.to", duration: "1 Month" },
+  { category: "👨‍💻 Developer & Engineering Tools", name: "Microsoft Office 365 (A1)", description: "Productivity suite for documentation", domain: "microsoft.com", duration: "Lifetime" },
+  { category: "👨‍💻 Developer & Engineering Tools", name: "3DEXPERIENCE SOLIDWORKS + Suites", description: "CAD, CAM, and design collaboration tools", domain: "solidworks.com", duration: "1 Year" },
+  { category: "👨‍💻 Developer & Engineering Tools", name: "3D Swymer Variants", description: "Engineering and manufacturing suites", domain: "3ds.com", duration: "1 Year" },
+
+  // Marketing, Growth & SEO Tools
+  { category: "📈 Marketing, Growth & SEO Tools", name: "Keyword Hero (Ultimate Hero)", description: "Unlocks hidden Google keyword data", domain: "keyword-hero.com", duration: "6 Months" },
+  { category: "📈 Marketing, Growth & SEO Tools", name: "Hootsuite (Standard)", description: "Social media scheduling & analytics", domain: "hootsuite.com", duration: "3 Months" },
+  { category: "📈 Marketing, Growth & SEO Tools", name: "Later for Reddit (Creator)", description: "Reddit post scheduling & management", domain: "later.com", duration: "1 Month" },
+  { category: "📈 Marketing, Growth & SEO Tools", name: "Creator Hooks Pro", description: "AI-based content ideas from trending topics", domain: "creatorhooks.com", duration: "1 Month" },
+  { category: "📈 Marketing, Growth & SEO Tools", name: "Full Enrich (Pro)", description: "Contact & lead enrichment platform", domain: "fullenrich.com", duration: "1 Month" },
+  { category: "📈 Marketing, Growth & SEO Tools", name: "Scalelist (Scaler 3000 Credits)", description: "B2B lead generation and prospecting", domain: "scalelist.com", duration: "1 Month" },
+  { category: "📈 Marketing, Growth & SEO Tools", name: "Viral Launch (Core / Growth)", description: "Amazon seller analytics & optimization", domain: "viral-launch.com", duration: "1 Month" },
+  { category: "📈 Marketing, Growth & SEO Tools", name: "Enginemailer (Free Forever)", description: "Email marketing and campaign automation", domain: "enginemailer.com", duration: "Lifetime" },
+  
+  // Education & Learning Platforms
+  { category: "📚 Education & Learning Platforms", name: "DataCamp (Premium)", description: "Learn data science, Python, R, and ML", domain: "datacamp.com", duration: "1 Year" },
+  { category: "📚 Education & Learning Platforms", name: "No Code MBA (Unlimited)", description: "Learn no-code app & business building", domain: "nocode.mba", duration: "1 Year" },
+  { category: "📚 Education & Learning Platforms", name: "Whizlabs (Premium Plus)", description: "Cloud, DevOps, and IT certification prep", domain: "whizlabs.com", duration: "1 Month" },
+  { category: "📚 Education & Learning Platforms", name: "JetBrains Edu Pack", description: "Developer education tools", domain: "jetbrains.com", duration: "1 Year" },
+  { category: "📚 Education & Learning Platforms", name: "Kickresume (Premium)", description: "Resume-building and career education", domain: "kickresume.com", duration: "1 Month" },
+  { category: "📚 Education & Learning Platforms", name: "Paperpal (Prime)", description: "Academic proofreading and writing enhancement", domain: "paperpal.com", duration: "1 Month" },
+
+  // Cloud, Storage & Security
+  { category: "☁️ Cloud, Storage & Security", name: "Backblaze (Unlimited)", description: "Cloud storage & backup", domain: "backblaze.com", duration: "1 Year" },
+  { category: "☁️ Cloud, Storage & Security", name: "Bitwarden (Family / Premium)", description: "Password & credential security", domain: "bitwarden.com", duration: "1 Year" },
+  { category: "☁️ Cloud, Storage & Security", name: "Cloudinary (Plus)", description: "Cloud media management", domain: "cloudinary.com", duration: "1 Month" },
+  { category: "☁️ Cloud, Storage & Security", name: "ImageKit.io (Pro)", description: "Image optimization and CDN delivery", domain: "imagekit.io", duration: "1 Month" },
+  
+  // 3D, CAD & Engineering Suites
+  { category: "🧱 3D, CAD & Engineering Suites", name: "3D Swymer + Creator + Collaborative Industry Innovator", description: "Offers CAD modeling, 3D visualization, simulation, and manufacturing integration tools.", domain: "3ds.com", duration: "1 Year" },
+  { category: "🧱 3D, CAD & Engineering Suites", name: "3D Swymer + Sculptor + Collaborative Industry Innovator", description: "Offers CAD modeling, 3D visualization, simulation, and manufacturing integration tools.", domain: "3ds.com", duration: "1 Year" },
+  { category: "🧱 3D, CAD & Engineering Suites", name: "3DEXPERIENCE SOLIDWORKS Pro + Swymer + Collaborative Industry Innovator", description: "Offers CAD modeling, 3D visualization, simulation, and manufacturing integration tools.", domain: "solidworks.com", duration: "1 Year" },
+  { category: "🧱 3D, CAD & Engineering Suites", name: "3D Swymer + Collaborative Industry Innovator", description: "Offers CAD modeling, 3D visualization, simulation, and manufacturing integration tools.", domain: "3ds.com", duration: "1 Year" },
+  { category: "🧱 3D, CAD & Engineering Suites", name: "3D Swymer + NC Shop Floor Programmer + Collaborative Industry Innovator", description: "Offers CAD modeling, 3D visualization, simulation, and manufacturing integration tools.", domain: "3ds.com", duration: "1 Year" },
+  { category: "🧱 3D, CAD & Engineering Suites", name: "3D Swymer + Creator + Sculptor + NC Shop Floor Programmer + SOLIDWORKS Professional", description: "Offers CAD modeling, 3D visualization, simulation, and manufacturing integration tools.", domain: "solidworks.com", duration: "1 Year" },
+
+  // Lifetime Access Tools
+  { category: "♾️ Lifetime Access Tools", name: "Rezi AI (Lifetime)", description: "AI resume optimizer", domain: "rezi.ai", duration: "Lifetime" },
+  { category: "♾️ Lifetime Access Tools", name: "Microsoft Office 365 (A1 License)", description: "Lifetime productivity suite", domain: "microsoft.com", duration: "Lifetime" },
+  { category: "♾️ Lifetime Access Tools", name: "The-BitHub.com (Elite)", description: "Premium development resource repository", domain: "the-bithub.com", duration: "Lifetime" },
+  
+  // Special handling for tools in multiple categories
+  { category: "📈 Marketing, Growth & SEO Tools", name: "Humanic AI", description: "Growth and customer journey analytics", domain: "humanic.ai", duration: "1 Month" },
+  { category: "📈 Marketing, Growth & SEO Tools", name: "Famous.ai", description: "AI-powered ad and landing page creation", domain: "famous.ai", duration: "1 Month" },
+  { category: "📈 Marketing, Growth & SEO Tools", name: "Outbox AI", description: "AI sales outreach automation", domain: "outbox.ai", duration: "1 Month" },
+  { category: "☁️ Cloud, Storage & Security", name: "AWS ($100 Credits)", description: "Cloud computing services", domain: "aws.amazon.com" },
+  { category: "☁️ Cloud, Storage & Security", name: "Confluent Cloud ($2000 Credit)", description: "Managed Kafka for data streaming", domain: "confluent.io" },
+  { category: "☁️ Cloud, Storage & Security", name: "Enginemailer (Free Forever)", description: "Email infrastructure for campaigns", domain: "enginemailer.com", duration: "Lifetime" },
+  { category: "♾️ Lifetime Access Tools", name: "Enginemailer (Free Forever)", description: "Email automation with lifetime credits", domain: "enginemailer.com", duration: "Lifetime" },
 ];
 
-export const TOOLS: Tool[] = rawToolData
-  .sort((a, b) => a.name.localeCompare(b.name))
-  .map((tool: any) => {
-    return {
-      name: tool.name,
-      category: tool.category,
-      imageUrl: tool.imageUrl || `https://logo.clearbit.com/${tool.domain}`,
-      description: TOOL_DESCRIPTIONS[tool.name] || `Discover the powerful features of ${tool.name}, a top-tier solution designed to enhance your workflow and boost productivity.`,
-    }
+const nameDescriptionMap = new Map();
+rawToolData.forEach(tool => {
+  if (!nameDescriptionMap.has(tool.name)) {
+    nameDescriptionMap.set(tool.name, tool.description);
+  }
 });
 
-export const CATEGORIES: string[] = [
-  "1-Year Plans",
-  "6-Month Plans",
-  "3-Month Plans",
-  "2-Month Plans",
-  "1-Month Plans",
-  "Lifetime Plans",
-  "Credit-Based / Bundles",
+const getCombinedDescription = (tool: any) => {
+  let finalDescription = tool.description;
+  const oldDescription = nameDescriptionMap.get(tool.name);
+  if (oldDescription && oldDescription !== tool.description) {
+     finalDescription = `${tool.description}. ${oldDescription}`;
+  }
+  return finalDescription;
+}
+
+const fullToolData = [
+  ...rawToolData,
+  { category: "💼 Productivity, Project Management & Collaboration", name: "Granola (Business)", description: "Smart meeting notes", domain: "granola.so", duration: "1 Year" },
+  { category: "💼 Productivity, Project Management & Collaboration", name: "Backblaze (Unlimited)", description: "Cloud data backup", domain: "backblaze.com", duration: "1 Year" },
+  { category: "💼 Productivity, Project Management & Collaboration", name: "Zoom (Pro)", domain: "zoom.us", nameOverride: "Zoom (Pro)", descriptionOverride: "A reliable cloud platform for video and audio conferencing, collaboration, chat, and webinars.", imageUrlOverride: "https://upload.wikimedia.org/wikipedia/commons/a/a2/Zoom_logo.svg", duration: "1 Year" },
+  { category: "💼 Productivity, Project Management & Collaboration", name: "Linear (Basic)", description: "A streamlined project management tool for modern software teams to track issues, manage sprints, and build momentum.", domain: "linear.app", duration: "1 Year" },
+  { category: "💼 Productivity, Project Management & Collaboration", name: "Airtable (Teams / Business Trial)", description: "A hybrid database and spreadsheet tool for managing projects, data, and workflows collaboratively.", domain: "airtable.com", duration: "1 Month" },
 ];
+
+
+// FIX: Explicitly type sort arguments as 'any' to handle the mixed-shape objects within 'fullToolData'.
+export const TOOLS: Tool[] = fullToolData
+  .sort((a: any, b: any) => (a.nameOverride || a.name).localeCompare(b.nameOverride || b.name))
+  .map((tool: any) => {
+    const name = tool.nameOverride || tool.name;
+    return {
+      name: name,
+      category: tool.category,
+      imageUrl: tool.imageUrlOverride || `https://logo.clearbit.com/${tool.domain}`,
+      description: tool.descriptionOverride || getCombinedDescription(tool) || `Discover the powerful features of ${name}, a top-tier solution designed to enhance your workflow and boost productivity.`,
+      duration: tool.duration,
+    }
+});

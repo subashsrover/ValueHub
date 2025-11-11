@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { TOOLS, CATEGORIES } from '../constants';
+import React, { useState, useEffect, useRef } from 'react';
+import { TOOLS, CATEGORIES, CATEGORY_DESCRIPTIONS, DURATIONS } from '../constants';
 import type { Tool } from '../types';
 import { SearchIcon } from './icons';
 
@@ -99,6 +99,9 @@ const ToolsPage: React.FC<ToolsPageProps> = ({ onBackClick }) => {
     const [selectedTool, setSelectedTool] = useState<Tool | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string>('All');
+    const [selectedDuration, setSelectedDuration] = useState<string>('All Durations');
+    const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+    const categoryDropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (selectedTool) {
@@ -111,10 +114,42 @@ const ToolsPage: React.FC<ToolsPageProps> = ({ onBackClick }) => {
         };
     }, [selectedTool]);
 
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
+                setIsCategoryDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
     const filteredTools = TOOLS.filter(tool =>
         (selectedCategory === 'All' || tool.category === selectedCategory) &&
+        (selectedDuration === 'All Durations' || tool.duration === selectedDuration) &&
         (tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         tool.description.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+
+    const handleCategorySelect = (category: string) => {
+        setSelectedCategory(category);
+        setIsCategoryDropdownOpen(false);
+    };
+
+    const DropdownArrow = ({ isOpen }: { isOpen: boolean }) => (
+        <svg className={`fill-current h-5 w-5 text-light-200/70 transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180' : ''}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+        </svg>
+    );
+
+    const SelectArrow = () => (
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-light-200/50">
+            <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+            </svg>
+        </div>
     );
 
   return (
@@ -127,7 +162,7 @@ const ToolsPage: React.FC<ToolsPageProps> = ({ onBackClick }) => {
           <p className="max-w-2xl text-lg text-light-200 mb-8">
             A curated collection of industry-leading software. Click on any logo to learn more.
           </p>
-          <div className="relative w-full max-w-lg mb-8">
+          <div className="relative w-full max-w-lg mb-6">
             <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-light-200/50">
               <SearchIcon />
             </span>
@@ -140,25 +175,68 @@ const ToolsPage: React.FC<ToolsPageProps> = ({ onBackClick }) => {
             />
           </div>
 
-          <div className="flex flex-wrap justify-center gap-2">
-            <button
-                onClick={() => setSelectedCategory('All')}
-                className={`px-4 py-2 text-sm font-semibold rounded-full transition-colors duration-200 ${selectedCategory === 'All' ? 'bg-secondary text-white' : 'bg-dark-700 text-light-200 hover:bg-dark-600'}`}
-            >
-                All
-            </button>
-            {CATEGORIES.map(category => (
+          <div className="flex flex-col sm:flex-row justify-center gap-4 w-full max-w-lg">
+            {/* Category Dropdown */}
+            <div className="relative w-full sm:w-1/2" ref={categoryDropdownRef}>
                 <button
-                    key={category}
-                    onClick={() => setSelectedCategory(category)}
-                    className={`px-4 py-2 text-sm font-semibold rounded-full transition-colors duration-200 ${selectedCategory === category ? 'bg-secondary text-white' : 'bg-dark-700 text-light-200 hover:bg-dark-600'}`}
+                    onClick={() => setIsCategoryDropdownOpen(prev => !prev)}
+                    className="w-full flex justify-between items-center bg-dark-800 border border-dark-700 text-light-100 rounded-full py-3 px-4 focus:outline-none focus:ring-2 focus:ring-secondary transition-colors duration-300"
+                    aria-haspopup="listbox"
+                    aria-expanded={isCategoryDropdownOpen}
                 >
-                    {category}
+                    <span className="truncate pr-2">{selectedCategory === 'All' ? 'All Categories' : selectedCategory}</span>
+                    <DropdownArrow isOpen={isCategoryDropdownOpen} />
                 </button>
-            ))}
+                {isCategoryDropdownOpen && (
+                     <div 
+                        role="listbox"
+                        className="absolute z-10 mt-2 w-full bg-dark-800 border border-dark-700 rounded-xl shadow-lg max-h-60 overflow-y-auto animate-fade-in"
+                    >
+                        <button
+                            onClick={() => handleCategorySelect('All')}
+                            className={`w-full text-left px-4 py-2 text-light-100 hover:bg-dark-700 transition-colors duration-200 ${selectedCategory === 'All' ? 'font-bold text-secondary' : ''}`}
+                            role="option"
+                            aria-selected={selectedCategory === 'All'}
+                        >
+                            All Categories
+                        </button>
+                        {CATEGORIES.map(category => (
+                            <button
+                                key={category}
+                                onClick={() => handleCategorySelect(category)}
+                                className={`w-full text-left px-4 py-2 text-light-100 hover:bg-dark-700 transition-colors duration-200 ${selectedCategory === category ? 'font-bold text-secondary' : ''}`}
+                                role="option"
+                                aria-selected={selectedCategory === category}
+                            >
+                                {category}
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
+            {/* Duration Dropdown */}
+            <div className="relative w-full sm:w-1/2">
+                <select
+                    value={selectedDuration}
+                    onChange={(e) => setSelectedDuration(e.target.value)}
+                    className="w-full appearance-none bg-dark-800 border border-dark-700 text-light-100 rounded-full py-3 px-4 focus:outline-none focus:ring-2 focus:ring-secondary transition-colors duration-300"
+                    aria-label="Filter by duration"
+                >
+                    {DURATIONS.map(duration => (
+                        <option key={duration} value={duration}>{duration}</option>
+                    ))}
+                </select>
+                <SelectArrow />
+            </div>
           </div>
         </div>
         
+        {selectedCategory !== 'All' && CATEGORY_DESCRIPTIONS[selectedCategory] && (
+            <div className="text-center max-w-3xl mx-auto mb-12 -mt-2">
+                <p className="text-lg text-light-200">{CATEGORY_DESCRIPTIONS[selectedCategory]}</p>
+            </div>
+        )}
+
         {filteredTools.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 md:gap-8">
                 {filteredTools.map((tool, index) => (

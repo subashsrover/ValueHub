@@ -11,4 +11,5 @@ export interface Tool {
   imageUrl: string;
   description: string;
   category: string;
+  duration?: string;
 }
