@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 export interface Benefit {
@@ -12,4 +13,11 @@ export interface Tool {
   description: string;
   category: string;
   duration?: string;
+}
+
+export interface Enquiry {
+  toolName: string;
+  name: string;
+  email: string;
+  reason: string;
 }

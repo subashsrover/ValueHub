@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { TOOLS, CATEGORIES, CATEGORY_DESCRIPTIONS, DURATIONS } from '../constants';
 import type { Tool } from '../types';
@@ -5,18 +6,20 @@ import { SearchIcon } from './icons';
 
 interface ToolsPageProps {
   onBackClick: () => void;
+  onEnquireClick: () => void;
 }
 
 const ToolCard: React.FC<{ tool: Tool; onClick: () => void }> = ({ tool, onClick }) => (
     <div 
-        className="group relative aspect-square bg-dark-800 rounded-xl p-4 flex flex-col items-center justify-center gap-4 cursor-pointer transform hover:scale-105 hover:bg-dark-700 transition-all duration-300 ease-in-out shadow-lg hover:shadow-primary/30"
+        className="group relative flex flex-col items-center justify-start text-center p-2 cursor-pointer transition-all duration-300 ease-in-out"
         onClick={onClick}
     >
-        <div className="w-16 h-16 sm:w-20 sm:h-20 transition-all duration-300 p-1">
-             <img 
+        <div className="relative w-16 h-16 mb-2">
+            <div className="absolute inset-0 bg-dark-800 rounded-xl transform group-hover:scale-110 group-hover:bg-dark-700 transition-all duration-300 shadow-lg group-hover:shadow-primary/30"></div>
+            <img 
                 src={tool.imageUrl} 
                 alt={`${tool.name} logo`} 
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain p-2 relative z-10 transform group-hover:scale-110 transition-transform duration-300"
                 onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.onerror = null; // prevent infinite loop
@@ -24,7 +27,7 @@ const ToolCard: React.FC<{ tool: Tool; onClick: () => void }> = ({ tool, onClick
                 }}
             />
         </div>
-        <p className="text-light-200 font-semibold text-center text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <p className="text-light-200 text-xs font-medium w-full truncate px-1">
             {tool.name}
         </p>
         
@@ -95,7 +98,7 @@ const ToolDetailModal: React.FC<{ tool: Tool; onClose: () => void }> = ({ tool, 
     );
 };
 
-const ToolsPage: React.FC<ToolsPageProps> = ({ onBackClick }) => {
+const ToolsPage: React.FC<ToolsPageProps> = ({ onBackClick, onEnquireClick }) => {
     const [selectedTool, setSelectedTool] = useState<Tool | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string>('All');
@@ -237,8 +240,20 @@ const ToolsPage: React.FC<ToolsPageProps> = ({ onBackClick }) => {
             </div>
         )}
 
+        <div className="bg-dark-800/50 rounded-xl p-4 text-center mb-12">
+            <p className="text-light-200">
+                Can't find the tool you're looking for? Let us know!
+            </p>
+            <button
+                onClick={onEnquireClick}
+                className="mt-3 bg-secondary text-white font-bold py-2 px-6 rounded-full text-base hover:bg-blue-500 transform hover:scale-105 transition-all duration-300 shadow-md hover:shadow-secondary/40 focus:outline-none focus:ring-4 focus:ring-secondary/50"
+            >
+                Enquire for a Tool
+            </button>
+        </div>
+
         {filteredTools.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 md:gap-8">
+            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-x-4 gap-y-6">
                 {filteredTools.map((tool, index) => (
                     <ToolCard key={index} tool={tool} onClick={() => setSelectedTool(tool)} />
                 ))}

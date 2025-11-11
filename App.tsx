@@ -5,8 +5,10 @@ import ToolsPage from './components/ToolsPage';
 import LoginPage from './components/LoginPage';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import ContactPage from './components/ContactPage';
+import EnquirePage from './components/EnquirePage';
 
-type Page = 'login' | 'home' | 'tools';
+type Page = 'login' | 'home' | 'tools' | 'contact' | 'enquire';
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>('login');
@@ -41,9 +43,11 @@ const App: React.FC = () => {
           <Header onHomeClick={() => navigateTo('home')} />
           <main className={`flex-grow transition-opacity duration-300 ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}>
             {currentPage === 'home' && <HomePage onExploreClick={() => navigateTo('tools')} />}
-            {currentPage === 'tools' && <ToolsPage onBackClick={() => navigateTo('home')} />}
+            {currentPage === 'tools' && <ToolsPage onBackClick={() => navigateTo('home')} onEnquireClick={() => navigateTo('enquire')} />}
+            {currentPage === 'contact' && <ContactPage onBackClick={() => navigateTo('home')} />}
+            {currentPage === 'enquire' && <EnquirePage onBackClick={() => navigateTo('tools')} />}
           </main>
-          <Footer />
+          <Footer onContactClick={() => navigateTo('contact')} />
         </>
       )}
     </div>
