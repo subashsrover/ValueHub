@@ -7,7 +7,7 @@ interface EnquirePageProps {
 }
 
 const EnquirePage: React.FC<EnquirePageProps> = ({ onBackClick }) => {
-  const [formData, setFormData] = useState<Enquiry>({
+  const [formData, setFormData] = useState<Omit<Enquiry, 'submittedAt'>>({
     toolName: '',
     name: '',
     email: '',
@@ -28,8 +28,24 @@ const EnquirePage: React.FC<EnquirePageProps> = ({ onBackClick }) => {
       return;
     }
     setError('');
-    // In a real app, you would send this data to a server.
-    console.log('Enquiry Submitted:', formData);
+
+    // Save enquiry to localStorage to simulate a database
+    try {
+      const newEnquiry: Enquiry = {
+        ...formData,
+        submittedAt: new Date().toISOString(),
+      };
+      const existingEnquiriesRaw = localStorage.getItem('enquiries');
+      const existingEnquiries: Enquiry[] = existingEnquiriesRaw ? JSON.parse(existingEnquiriesRaw) : [];
+      const updatedEnquiries = [...existingEnquiries, newEnquiry];
+      localStorage.setItem('enquiries', JSON.stringify(updatedEnquiries));
+      console.log('Enquiry saved to DB:', newEnquiry);
+    } catch (err) {
+      console.error('Failed to save enquiry to localStorage:', err);
+      setError('There was an error submitting your enquiry. Please try again.');
+      return;
+    }
+    
     setIsSubmitted(true);
   };
 

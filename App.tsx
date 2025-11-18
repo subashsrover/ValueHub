@@ -7,49 +7,153 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import ContactPage from './components/ContactPage';
 import EnquirePage from './components/EnquirePage';
+import TermsPage from './components/TermsPage';
+import DisclaimerPage from './components/DisclaimerPage';
+import EULAPage from './components/EULAPage';
+import AdminDashboard from './components/AdminDashboard';
+import PaymentModal from './components/PaymentModal';
+import type { Tool, User } from './types';
+import { TOOLS } from './constants';
+import { api } from './services/api';
 
-type Page = 'login' | 'home' | 'tools' | 'contact' | 'enquire';
+type Page = 'home' | 'tools' | 'contact' | 'enquire' | 'terms' | 'disclaimer' | 'eula' | 'admin';
+type Theme = 'dark' | 'light';
 
 const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<Page>('login');
+  const [currentPage, setCurrentPage] = useState<Page>('home');
   const [isFadingOut, setIsFadingOut] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [favoriteTools, setFavoriteTools] = useState<Tool[]>([]);
+  const [theme, setTheme] = useState<Theme>(
+    () => (localStorage.getItem('theme') as Theme) || 'dark'
+  );
+
+  useEffect(() => {
+    // Check for session
+    const currentUser = api.getCurrentUser();
+    if (currentUser) {
+      setUser(currentUser);
+      loadFavorites();
+    }
+  }, []);
+
+  const loadFavorites = () => {
+    try {
+        const favoriteToolNames: string[] = JSON.parse(localStorage.getItem('favorite_tool_names') || '[]');
+        const loadedFavorites = TOOLS.filter(tool => favoriteToolNames.includes(tool.name));
+        setFavoriteTools(loadedFavorites);
+    } catch (error) {
+        console.error('Error parsing favorite tools:', error);
+        setFavoriteTools([]);
+    }
+  };
+
+  useEffect(() => {
+    if (theme === 'light') {
+        document.body.classList.remove('bg-dark-900', 'text-light-100');
+        document.body.classList.add('bg-white', 'text-dark-900');
+    } else {
+        document.body.classList.remove('bg-white', 'text-dark-900');
+        document.body.classList.add('bg-dark-900', 'text-light-100');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const handleThemeToggle = () => {
+    setTheme(prevTheme => (prevTheme === 'dark' ? 'light' : 'dark'));
+  };
 
   const navigateTo = (page: Page) => {
     if (page === currentPage) return;
-    
-    // No fade for initial login -> home transition
-    if (currentPage === 'login') {
-      setCurrentPage(page);
-      return;
-    }
-
     setIsFadingOut(true);
     setTimeout(() => {
       setCurrentPage(page);
       setIsFadingOut(false);
-    }, 300); // Match duration of fade-out animation
+    }, 300);
   };
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [currentPage]);
 
+  const handleLoginSuccess = () => {
+    const currentUser = api.getCurrentUser();
+    setUser(currentUser);
+    setIsLoginModalOpen(false);
+    loadFavorites();
+  };
+
+  const handleLogout = async () => {
+    await api.logout();
+    setUser(null);
+    setFavoriteTools([]);
+    if (currentPage === 'admin') navigateTo('home');
+  };
+
+  const handleUpgradeClick = () => {
+    if (!user) {
+        setIsLoginModalOpen(true);
+    } else {
+        setIsPaymentModalOpen(true);
+    }
+  };
+
+  const handlePaymentSuccess = () => {
+    setIsPaymentModalOpen(false);
+    const updatedUser = api.getCurrentUser();
+    setUser(updatedUser);
+    alert("Congratulations! You have been upgraded to Pro.");
+  };
+
+  const toggleFavoriteTool = (toolToToggle: Tool) => {
+    setFavoriteTools(prevFavorites => {
+        const isFavorite = prevFavorites.some(fav => fav.name === toolToToggle.name);
+        let newFavorites;
+        if (isFavorite) {
+            newFavorites = prevFavorites.filter(fav => fav.name !== toolToToggle.name);
+        } else {
+            newFavorites = [...prevFavorites, toolToToggle];
+        }
+        // Persist
+        const names = newFavorites.map(t => t.name);
+        localStorage.setItem('favorite_tool_names', JSON.stringify(names));
+        return newFavorites;
+    });
+  };
+
   return (
-    <div className="flex flex-col min-h-screen bg-dark-900 font-sans">
-      {currentPage === 'login' ? (
-        <LoginPage onLoginSuccess={() => navigateTo('home')} />
-      ) : (
-        <>
-          <Header onHomeClick={() => navigateTo('home')} />
-          <main className={`flex-grow transition-opacity duration-300 ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}>
-            {currentPage === 'home' && <HomePage onExploreClick={() => navigateTo('tools')} />}
-            {currentPage === 'tools' && <ToolsPage onBackClick={() => navigateTo('home')} onEnquireClick={() => navigateTo('enquire')} />}
-            {currentPage === 'contact' && <ContactPage onBackClick={() => navigateTo('home')} />}
-            {currentPage === 'enquire' && <EnquirePage onBackClick={() => navigateTo('tools')} />}
-          </main>
-          <Footer onContactClick={() => navigateTo('contact')} />
-        </>
-      )}
+    <div className="flex flex-col min-h-screen font-sans">
+      <Header 
+        onHomeClick={() => navigateTo('home')}
+        isLoggedIn={!!user}
+        user={user}
+        onLoginClick={() => setIsLoginModalOpen(true)}
+        onLogoutClick={handleLogout}
+        onAdminClick={() => navigateTo('admin')}
+        onUpgradeClick={handleUpgradeClick}
+        theme={theme}
+        onThemeToggle={handleThemeToggle}
+      />
+      <main className={`flex-grow transition-opacity duration-300 ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}>
+        {currentPage === 'home' && <HomePage onExploreClick={() => navigateTo('tools')} />}
+        {currentPage === 'tools' && <ToolsPage onBackClick={() => navigateTo('home')} onEnquireClick={() => navigateTo('enquire')} isLoggedIn={!!user} favoriteTools={favoriteTools} onToggleFavorite={toggleFavoriteTool} />}
+        {currentPage === 'contact' && <ContactPage onBackClick={() => navigateTo('home')} />}
+        {currentPage === 'enquire' && <EnquirePage onBackClick={() => navigateTo('tools')} />}
+        {currentPage === 'terms' && <TermsPage onBackClick={() => navigateTo('home')} />}
+        {currentPage === 'disclaimer' && <DisclaimerPage onBackClick={() => navigateTo('home')} />}
+        {currentPage === 'eula' && <EULAPage onBackClick={() => navigateTo('home')} />}
+        {currentPage === 'admin' && user?.role === 'admin' && <AdminDashboard onBackClick={() => navigateTo('home')} />}
+      </main>
+      <Footer 
+        onContactClick={() => navigateTo('contact')}
+        onTermsClick={() => navigateTo('terms')}
+        onDisclaimerClick={() => navigateTo('disclaimer')}
+        onEULAClick={() => navigateTo('eula')}
+      />
+      {isLoginModalOpen && <LoginPage onLoginSuccess={handleLoginSuccess} onClose={() => setIsLoginModalOpen(false)} />}
+      {isPaymentModalOpen && <PaymentModal onClose={() => setIsPaymentModalOpen(false)} onSuccess={handlePaymentSuccess} planName="Value Hub Pro" price="$29.00" />}
     </div>
   );
 };
