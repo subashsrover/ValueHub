@@ -1,531 +1,708 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+'use client';
+
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { TOOLS, CATEGORIES, CATEGORY_DESCRIPTIONS, DURATIONS, TAGS, TAG_COLORS } from '../constants';
 import type { Tool } from '../types';
-import { SearchIcon, StarIcon, GridIcon, ListIcon } from './icons';
+import { 
+    SearchIcon, StarIcon, BellIcon, CompareIcon, CheckIcon, HeartIcon, ZapIcon, GridIcon, ListIcon 
+} from './icons';
+import { useAuth, useFavorites, usePriceAlerts, useHistory, useRatings } from './Providers';
+import Link from 'next/link';
 
-interface ToolsPageProps {
-  onBackClick: () => void;
-  onEnquireClick: () => void;
-  isLoggedIn: boolean;
-  favoriteTools: Tool[];
-  onToggleFavorite: (tool: Tool) => void;
-}
+// --- 3D Tilt Card Wrapper ---
+const TiltCard = ({ children, className, onClick }: { children: React.ReactNode, className?: string, onClick?: () => void }) => {
+    const x = useMotionValue(0);
+    const y = useMotionValue(0);
 
-interface ToolCardProps {
-    tool: Tool;
-    onClick: () => void;
-    isLoggedIn: boolean;
-    isFavorite: boolean;
-    onFavoriteClick: () => void;
-}
+    const mouseXSpring = useSpring(x);
+    const mouseYSpring = useSpring(y);
 
-const ToolCard: React.FC<ToolCardProps> = ({ tool, onClick, isLoggedIn, isFavorite, onFavoriteClick }) => (
-    <div 
-        className="group relative flex flex-col items-center justify-start text-center p-2 cursor-pointer transition-all duration-300 ease-in-out"
-        onClick={onClick}
-    >
-        {isLoggedIn && (
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onFavoriteClick();
-                }}
-                className="absolute top-1 right-1 z-20 p-1 rounded-full bg-dark-900/50 hover:bg-dark-900/80 text-yellow-400 hover:text-yellow-300 transition-colors"
-                aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-            >
-                <StarIcon filled={isFavorite} className="w-4 h-4" />
-            </button>
-        )}
-        <div className="relative w-16 h-16 mb-2">
-            <div className="absolute inset-0 bg-dark-800 rounded-xl transform group-hover:scale-110 group-hover:bg-dark-700 transition-all duration-300 shadow-lg group-hover:shadow-primary/30"></div>
-            <img 
-                src={tool.imageUrl} 
-                alt={`${tool.name} logo`} 
-                className="w-full h-full object-contain p-2 relative z-10 transform group-hover:scale-110 transition-transform duration-300"
-                onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.onerror = null; // prevent infinite loop
-                    target.src = 'https://via.placeholder.com/150/1e293b/f1f5f9?text=Logo'; // Fallback image
-                }}
-            />
-            {tool.tags && tool.tags.length > 0 && (
-              <div className="absolute top-0 left-0 -mt-1 -ml-1 z-20 transform group-hover:scale-110 transition-transform duration-300">
-                <span className={`${TAG_COLORS[tool.tags[0]] || 'bg-gray-500 text-white'} text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md`}>
-                  {tool.tags[0]}
-                </span>
-              </div>
-            )}
-        </div>
-        <p className="text-light-200 text-xs font-medium w-full truncate px-1">
-            {tool.name}
-        </p>
-        
-        {/* Tooltip */}
-        <div 
-            role="tooltip"
-            className="absolute bottom-full mb-2 w-72 bg-dark-900 text-light-100 text-sm rounded-lg shadow-lg p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-20 transform -translate-x-1/2 left-1/2 group-hover:delay-300"
+    const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
+    const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
+
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const width = rect.width;
+        const height = rect.height;
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        const xPct = mouseX / width - 0.5;
+        const yPct = mouseY / height - 0.5;
+        x.set(xPct);
+        y.set(yPct);
+    };
+
+    const handleMouseLeave = () => {
+        x.set(0);
+        y.set(0);
+    };
+
+    return (
+        <motion.div
+            onClick={onClick}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            style={{ rotateY, rotateX, transformStyle: "preserve-3d" }}
+            whileHover={{ scale: 1.02 }}
+            className={`relative cursor-pointer group perspective-1000 ${className}`}
         >
-            <p className="font-bold text-base mb-1">{tool.name}</p>
-            <p className="text-light-200">{tool.description}</p>
-            {tool.offerPrice != null && tool.originalPrice != null && (
-                <div className="mt-2 pt-2 border-t border-dark-700/50 flex justify-center items-baseline gap-2">
-                    <span className="text-secondary font-bold text-lg">${tool.offerPrice}</span>
-                    <span className="text-light-200/50 line-through">${tool.originalPrice}</span>
-                </div>
-            )}
-            <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-8 border-x-transparent border-t-8 border-t-dark-900"></div>
-        </div>
-    </div>
-);
+            {children}
+        </motion.div>
+    );
+};
 
-const ToolListItem: React.FC<ToolCardProps> = ({ tool, onClick, isLoggedIn, isFavorite, onFavoriteClick }) => (
-    <div 
-        className="group relative flex items-center gap-4 p-4 bg-dark-800 rounded-xl hover:bg-dark-700 transition-all duration-300 ease-in-out cursor-pointer shadow-sm hover:shadow-md"
-        onClick={onClick}
-    >
-        {/* Image */}
-        <div className="relative w-16 h-16 flex-shrink-0 bg-white/5 rounded-lg p-2">
-            <img 
-                src={tool.imageUrl} 
-                alt={`${tool.name} logo`} 
-                className="w-full h-full object-contain"
-                onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.onerror = null;
-                    target.src = 'https://via.placeholder.com/150/1e293b/f1f5f9?text=Logo';
-                }}
-            />
-        </div>
-
-        {/* Main Content */}
-        <div className="flex-grow flex flex-col md:flex-row md:items-center gap-4 overflow-hidden">
-            {/* Name & Tags */}
-            <div className="md:w-1/4 min-w-[180px] flex-shrink-0">
-                <h3 className="text-lg font-bold text-light-100 truncate">{tool.name}</h3>
-                {tool.tags && tool.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1">
-                        {tool.tags.slice(0, 2).map(tag => (
-                             <span key={tag} className={`${TAG_COLORS[tag] || 'bg-gray-500 text-white'} text-[10px] font-bold px-2 py-0.5 rounded-full`}>
-                                {tag}
-                            </span>
-                        ))}
-                         {tool.tags.length > 2 && <span className="text-[10px] text-light-200/50">+{tool.tags.length - 2}</span>}
-                    </div>
-                )}
-            </div>
-
-            {/* Description */}
-            <div className="flex-grow md:border-l md:border-dark-600 md:pl-4">
-                 <p className="text-light-200 text-sm line-clamp-2 md:line-clamp-3">{tool.description}</p>
-            </div>
-        </div>
-
-        {/* Right Side: Price & Actions */}
-        <div className="flex-shrink-0 flex flex-col items-end gap-2 ml-2 min-w-[100px]">
-             {tool.offerPrice != null ? (
-                 <div className="text-right">
-                     <span className="block text-secondary font-bold">${tool.offerPrice}</span>
-                     {tool.originalPrice && <span className="block text-xs text-light-200/50 line-through">${tool.originalPrice}</span>}
-                 </div>
-             ) : (
-                 <span className="text-xs text-light-200/50">View Details</span>
-             )}
-             
-             {isLoggedIn && (
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onFavoriteClick();
-                    }}
-                    className={`p-1.5 rounded-full transition-colors ${isFavorite ? 'text-yellow-400 bg-yellow-400/10' : 'text-light-200/30 hover:text-yellow-400 hover:bg-dark-600'}`}
-                >
-                    <StarIcon filled={isFavorite} className="w-5 h-5" />
-                </button>
-            )}
-        </div>
-    </div>
-);
-
-interface ToolDetailModalProps {
-    tool: Tool;
-    onClose: () => void;
-    isLoggedIn: boolean;
-    isFavorite: boolean;
-    onFavoriteClick: () => void;
-}
-
-const ToolDetailModal: React.FC<ToolDetailModalProps> = ({ tool, onClose, isLoggedIn, isFavorite, onFavoriteClick }) => {
+// --- Tool Detail Modal (Unchanged Logic, Updated UI for consistency) ---
+const ToolDetailModal = ({ tool, onClose, isLoggedIn, isFavorite, onFavoriteClick, userRating, onRate, hasAlert, onAlertClick }: any) => {
     useEffect(() => {
-        const handleEsc = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                onClose();
-            }
-        };
+        const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
         window.addEventListener('keydown', handleEsc);
-        return () => {
-            window.removeEventListener('keydown', handleEsc);
-        };
+        return () => window.removeEventListener('keydown', handleEsc);
     }, [onClose]);
 
     return (
-        <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="tool-name"
-            className="fixed inset-0 bg-dark-900/80 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in"
-            onClick={onClose}
-        >
-            <div
-                className="bg-dark-800 rounded-2xl p-8 max-w-lg w-full m-4 shadow-2xl transform animate-scale-in"
-                onClick={(e) => e.stopPropagation()}
+        <div className="fixed inset-0 bg-dark-900/90 backdrop-blur-md flex items-center justify-center z-[60] animate-fade-in p-4" onClick={onClose}>
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.9, rotateX: 10 }}
+                animate={{ opacity: 1, scale: 1, rotateX: 0 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="bg-dark-800/95 w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl border border-white/10 flex flex-col md:flex-row overflow-hidden ring-1 ring-white/10" 
+                onClick={e => e.stopPropagation()}
             >
-                <div className="flex justify-end">
-                    <button
-                        onClick={onClose}
-                        aria-label="Close dialog"
-                        className="text-light-200 hover:text-white transition-colors text-3xl leading-none font-bold -mt-4 -mr-2"
-                    >
-                        &times;
-                    </button>
-                </div>
-                <div className="flex flex-col items-center text-center">
-                    <div className="w-24 h-24 mb-6 bg-white/10 rounded-xl p-2 flex items-center justify-center">
-                        <img 
-                            src={tool.imageUrl} 
-                            alt={`${tool.name} logo`} 
-                            className="w-full h-full object-contain"
-                            onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.onerror = null; // prevent infinite loop
-                                target.src = 'https://via.placeholder.com/150/1e293b/f1f5f9?text=Logo'; // Fallback image
-                            }}
-                        />
-                    </div>
-                    <div className="flex items-center justify-center gap-3 mb-3">
-                        <h2 id="tool-name" className="text-3xl font-bold text-light-100">{tool.name}</h2>
-                         {isLoggedIn && (
-                            <button
-                                onClick={onFavoriteClick}
-                                className="text-yellow-400 hover:text-yellow-300 transition-colors"
-                                aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-                            >
-                                <StarIcon filled={isFavorite} className="w-7 h-7" />
-                            </button>
-                        )}
-                    </div>
-                    {tool.tags && tool.tags.length > 0 && (
-                      <div className="flex flex-wrap justify-center gap-2 mb-4">
-                        {tool.tags.map(tag => (
-                          <span key={tag} className={`${TAG_COLORS[tag] || 'bg-gray-500 text-white'} text-xs font-bold px-2.5 py-1 rounded-full`}>
-                            {tag}
-                          </span>
+                {/* Image Section */}
+                <div className="w-full md:w-1/3 bg-gradient-to-br from-light-100 to-light-200 flex items-center justify-center p-8 relative">
+                    <img src={tool.imageUrl} alt={tool.name} className="w-full h-auto object-contain max-h-64 drop-shadow-2xl transform hover:scale-105 transition-transform duration-500" />
+                    <div className="absolute top-4 left-4 flex flex-wrap gap-2">
+                        {tool.tags?.map((tag: string) => (
+                             <span key={tag} className={`text-xs font-bold px-2 py-1 rounded-full shadow-lg ${TAG_COLORS[tag] || 'bg-gray-600 text-white'}`}>{tag}</span>
                         ))}
-                      </div>
-                    )}
-                    <p className="text-light-200">{tool.description}</p>
-
-                    {tool.offerPrice != null && tool.originalPrice != null && (
-                        <div className="mt-6 w-full bg-dark-900/50 rounded-lg p-4 text-center">
-                            <p className="text-sm font-semibold text-light-200/70 tracking-wider">EXCLUSIVE OFFER</p>
-                            <div className="flex items-center justify-center gap-4 mt-2">
-                                <span className="text-5xl font-bold text-secondary">${tool.offerPrice}</span>
-                                <div className="text-left">
-                                    <span className="text-xl text-light-200/50 line-through">${tool.originalPrice}</span>
-                                    <span className="block text-lg font-bold text-accent">
-                                        Save {Math.round(((tool.originalPrice - tool.offerPrice) / tool.originalPrice) * 100)}%
-                                    </span>
-                                </div>
-                            </div>
-                            {tool.duration && <p className="text-xs text-light-200/50 mt-2">for {tool.duration}</p>}
-                        </div>
-                    )}
+                    </div>
                 </div>
-            </div>
+
+                {/* Content Section */}
+                <div className="w-full md:w-2/3 p-8 flex flex-col">
+                    <div className="flex justify-between items-start mb-4">
+                        <div>
+                            <h2 className="text-3xl font-bold text-light-100">{tool.name}</h2>
+                            <p className="text-secondary font-medium">{tool.category}</p>
+                        </div>
+                        <button onClick={onClose} className="text-light-200 hover:text-white text-3xl leading-none transition-colors">&times;</button>
+                    </div>
+
+                    <p className="text-light-200 mb-6 text-lg leading-relaxed">{tool.description}</p>
+
+                    {/* Price & Actions */}
+                    <div className="bg-dark-900/50 rounded-xl p-6 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 border border-white/5">
+                         <div>
+                             {tool.originalPrice && <span className="text-light-200/50 line-through text-sm">Was ${tool.originalPrice}</span>}
+                             <div className="text-3xl font-bold text-green-400 flex items-baseline gap-2">
+                                 ${tool.offerPrice || 0}
+                                 <span className="text-sm text-light-200 font-normal">/ {tool.duration}</span>
+                             </div>
+                         </div>
+                         <div className="flex gap-3">
+                             <button onClick={onAlertClick} className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold transition-colors ${hasAlert ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 'bg-dark-700 text-light-200 hover:text-white hover:bg-dark-600'}`}>
+                                 <BellIcon className="w-5 h-5" filled={hasAlert} />
+                             </button>
+                             <button onClick={onFavoriteClick} className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold transition-colors ${isFavorite ? 'bg-red-500/20 text-red-500 border border-red-500/30' : 'bg-dark-700 text-light-200 hover:text-white hover:bg-dark-600'}`}>
+                                 <HeartIcon className="w-5 h-5" filled={isFavorite} />
+                             </button>
+                             <a href={`https://${tool.domain}`} target="_blank" rel="noopener noreferrer" className="bg-secondary hover:bg-blue-600 text-white px-6 py-2 rounded-full font-bold transition-all shadow-lg hover:shadow-secondary/40">
+                                 Visit Website
+                             </a>
+                         </div>
+                    </div>
+
+                    {/* Ratings */}
+                    <div>
+                        <h3 className="text-light-100 font-bold mb-2 flex items-center gap-2">
+                            Rate this Tool
+                            {userRating > 0 && <span className="text-xs font-normal text-green-400">(You rated: {userRating})</span>}
+                        </h3>
+                        <div className="flex gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <button 
+                                    key={star} 
+                                    onClick={() => onRate(star)}
+                                    className="focus:outline-none hover:scale-110 transition-transform"
+                                >
+                                    <StarIcon 
+                                        className={`w-8 h-8 transition-colors ${star <= userRating ? 'text-yellow-400' : 'text-dark-600 hover:text-yellow-400/50'}`} 
+                                        filled={star <= userRating} 
+                                    />
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </motion.div>
         </div>
     );
 };
 
-const ToolsPage: React.FC<ToolsPageProps> = ({ onBackClick, onEnquireClick, isLoggedIn, favoriteTools, onToggleFavorite }) => {
-    const [selectedTool, setSelectedTool] = useState<Tool | null>(null);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState<string>('All');
-    const [selectedDuration, setSelectedDuration] = useState<string>('All Durations');
-    const [selectedTag, setSelectedTag] = useState<string>('All Tags');
-    const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
-    const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
-    const categoryDropdownRef = useRef<HTMLDivElement>(null);
+// --- Comparison Modal ---
+const ComparisonModal = ({ tools, onClose, onRemove }: { tools: Tool[], onClose: () => void, onRemove: (name: string) => void }) => {
+    return (
+        <div className="fixed inset-0 bg-dark-900/95 backdrop-blur-sm flex items-center justify-center z-[70] animate-fade-in p-4" onClick={onClose}>
+             <motion.div 
+                initial={{ y: 50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                className="bg-dark-800 w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl border border-white/10 p-6" 
+                onClick={e => e.stopPropagation()}
+             >
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold text-light-100 flex items-center gap-2">
+                        <CompareIcon className="w-6 h-6 text-secondary" /> Tool Comparison
+                    </h2>
+                    <button onClick={onClose} className="text-light-200 hover:text-white text-2xl">&times;</button>
+                </div>
 
-    useEffect(() => {
-        if (selectedTool) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'auto';
-        }
-        return () => {
-            document.body.style.overflow = 'auto';
-        };
-    }, [selectedTool]);
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
-                setIsCategoryDropdownOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
-
-    const filteredTools = TOOLS.filter(tool => {
-        if (showFavoritesOnly && !favoriteTools.some(fav => fav.name === tool.name)) {
-            return false;
-        }
-        return (selectedCategory === 'All' || tool.category === selectedCategory) &&
-            (selectedDuration === 'All Durations' || tool.duration === selectedDuration) &&
-            (selectedTag === 'All Tags' || (tool.tags && tool.tags.includes(selectedTag))) &&
-            (tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            tool.description.toLowerCase().includes(searchQuery.toLowerCase()));
-    });
-
-    const handleCategorySelect = (category: string) => {
-        setSelectedCategory(category);
-        setIsCategoryDropdownOpen(false);
-    };
-
-    const handleClearFilters = () => {
-        setSearchQuery('');
-        setSelectedCategory('All');
-        setSelectedDuration('All Durations');
-        setSelectedTag('All Tags');
-        setShowFavoritesOnly(false);
-    };
-
-    const DropdownArrow = ({ isOpen }: { isOpen: boolean }) => (
-        <svg className={`fill-current h-5 w-5 text-light-200/70 transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180' : ''}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
-        </svg>
-    );
-
-    const SelectArrow = () => (
-        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-light-200/50">
-            <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
-            </svg>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr>
+                                <th className="p-4 border-b border-dark-700 min-w-[150px] text-light-200/70">Feature</th>
+                                {tools.map(tool => (
+                                    <th key={tool.name} className="p-4 border-b border-dark-700 min-w-[250px]">
+                                        <div className="flex justify-between items-start">
+                                            <span className="text-xl font-bold text-light-100 block mb-2">{tool.name}</span>
+                                            <button onClick={() => onRemove(tool.name)} className="text-red-400 hover:text-red-300 text-xs border border-red-500/30 px-2 py-1 rounded hover:bg-red-500/10 transition-colors">&times; Remove</button>
+                                        </div>
+                                        <div className="h-24 w-full bg-white/5 rounded-lg flex items-center justify-center p-2 border border-white/5">
+                                            <img src={tool.imageUrl} alt="logo" className="max-h-full max-w-full object-contain" />
+                                        </div>
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody className="text-light-200">
+                            <tr>
+                                <td className="p-4 border-b border-dark-700 font-bold">Price</td>
+                                {tools.map(tool => (
+                                    <td key={tool.name} className="p-4 border-b border-dark-700">
+                                        <span className="text-green-400 font-bold text-lg">${tool.offerPrice}</span>
+                                        {tool.originalPrice && <span className="text-xs line-through opacity-50 ml-2">${tool.originalPrice}</span>}
+                                    </td>
+                                ))}
+                            </tr>
+                            <tr>
+                                <td className="p-4 border-b border-dark-700 font-bold">Duration</td>
+                                {tools.map(tool => (
+                                    <td key={tool.name} className="p-4 border-b border-dark-700">{tool.duration}</td>
+                                ))}
+                            </tr>
+                            <tr>
+                                <td className="p-4 border-b border-dark-700 font-bold">Category</td>
+                                {tools.map(tool => (
+                                    <td key={tool.name} className="p-4 border-b border-dark-700 text-sm">{tool.category}</td>
+                                ))}
+                            </tr>
+                            <tr>
+                                <td className="p-4 border-b border-dark-700 font-bold">Description</td>
+                                {tools.map(tool => (
+                                    <td key={tool.name} className="p-4 border-b border-dark-700 text-sm">{tool.description}</td>
+                                ))}
+                            </tr>
+                            <tr>
+                                <td className="p-4 border-b border-dark-700 font-bold">Website</td>
+                                {tools.map(tool => (
+                                    <td key={tool.name} className="p-4 border-b border-dark-700">
+                                         {/* Security: Prevent tabnabbing */}
+                                        <a href={`https://${(tool as any).domain}`} target="_blank" rel="noopener noreferrer" className="text-secondary hover:underline text-sm">
+                                            Visit Site &rarr;
+                                        </a>
+                                    </td>
+                                ))}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+             </motion.div>
         </div>
     );
+};
+
+// --- ToolCard Component ---
+const ToolCard = ({ 
+    tool, onClick, isLoggedIn, isFavorite, onFavoriteClick, stats, hasAlert, onAlertClick, isCompareSelected, onCompareToggle 
+}: {
+    tool: Tool, 
+    onClick: () => void, 
+    isLoggedIn: boolean, 
+    isFavorite: boolean, 
+    onFavoriteClick: () => void, 
+    stats: { average: number, count: number }, 
+    hasAlert: boolean, 
+    onAlertClick: () => void,
+    isCompareSelected: boolean,
+    onCompareToggle: () => void
+}) => {
+    return (
+        <TiltCard onClick={onClick} className={`h-full flex flex-col bg-dark-800/60 backdrop-blur-sm rounded-xl overflow-hidden border transition-all duration-300 ${isCompareSelected ? 'border-secondary ring-2 ring-secondary' : 'border-white/10 hover:border-secondary/50'}`}>
+             <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+             
+             <div className="relative h-40 bg-dark-900/50 overflow-hidden">
+                <img 
+                    src={tool.imageUrl} 
+                    alt={tool.name} 
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100" 
+                    onError={(e) => {(e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=Value+Hub'}} 
+                />
+                <div className="absolute top-2 right-2 flex gap-2 z-10 transform translate-x-10 group-hover:translate-x-0 transition-transform duration-300 ease-out">
+                     <button 
+                        onClick={(e) => { e.stopPropagation(); onFavoriteClick(); }} 
+                        className={`p-2 rounded-full backdrop-blur-md transition-colors shadow-lg ${isFavorite ? 'bg-red-500/20 text-red-500 border border-red-500/30' : 'bg-black/40 text-white hover:bg-black/60 border border-white/10'}`}
+                        title="Add to Wishlist"
+                    >
+                        <HeartIcon className="w-5 h-5" filled={isFavorite} />
+                     </button>
+                </div>
+                {tool.tags && tool.tags.length > 0 && (
+                    <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+                        {tool.tags.map((tag: string) => (
+                            <span key={tag} className={`text-[10px] font-bold px-2 py-1 rounded-full shadow-lg backdrop-blur-sm ${TAG_COLORS[tag] || 'bg-gray-600 text-white'}`}>
+                                {tag}
+                            </span>
+                        ))}
+                    </div>
+                )}
+             </div>
+             
+             <div className="p-5 flex-grow flex flex-col relative z-10" style={{ transform: "translateZ(20px)" }}>
+                 <div className="flex justify-between items-start mb-2">
+                    <div>
+                        <h3 className="font-bold text-lg text-light-100 leading-tight group-hover:text-secondary transition-colors line-clamp-1" title={tool.name}>{tool.name}</h3>
+                        <p className="text-xs text-light-200/70 mt-1 truncate">{tool.category.split(' ')[1] || tool.category}</p>
+                    </div>
+                 </div>
+                 
+                 <p className="text-sm text-light-200/80 mb-4 line-clamp-2 leading-relaxed" title={tool.description}>{tool.description}</p>
+                 
+                 <div className="mt-auto space-y-3">
+                     <div className="flex items-center justify-between text-xs text-light-200/80 bg-dark-900/30 p-2 rounded-lg border border-white/5">
+                        <div className="flex items-center gap-1" title={`${stats?.average} out of 5`}>
+                             <StarIcon className="w-3.5 h-3.5 text-yellow-400" filled />
+                             <span className="font-medium text-white">{stats?.average?.toFixed(1) || 'N/A'}</span>
+                             <span className="text-light-200/50">({stats?.count || 0})</span>
+                        </div>
+                        <span className="text-secondary font-medium">{tool.duration}</span>
+                     </div>
+                     
+                     <div className="pt-3 border-t border-white/10 flex items-center justify-between">
+                         <div className="flex flex-col">
+                             {tool.originalPrice && <span className="text-xs text-light-200/50 line-through">${tool.originalPrice}</span>}
+                             <div className="flex items-center gap-1 text-green-400 font-bold text-lg shadow-green-400/20 drop-shadow-sm">
+                                 ${tool.offerPrice || 0}
+                                 {tool.originalPrice && tool.offerPrice && (
+                                     <span className="text-[10px] bg-green-500/20 px-1.5 py-0.5 rounded ml-1 text-green-300">
+                                         -{Math.round(((tool.originalPrice - tool.offerPrice) / tool.originalPrice) * 100)}%
+                                     </span>
+                                 )}
+                             </div>
+                         </div>
+                         <button className="bg-white/5 hover:bg-secondary text-white p-2 rounded-lg transition-colors border border-white/10 hover:border-secondary/50 shadow-lg hover:shadow-secondary/20">
+                            <ZapIcon className="w-5 h-5" />
+                         </button>
+                     </div>
+                 </div>
+             </div>
+             
+             {/* Actions Footer */}
+             <div className="bg-dark-900/40 p-2 flex items-center justify-between border-t border-white/10 backdrop-blur-sm">
+                 <button onClick={(e) => { e.stopPropagation(); onAlertClick(); }} className={`flex-1 flex items-center justify-center gap-1 text-xs py-1 rounded transition-colors ${hasAlert ? 'text-yellow-400' : 'text-light-200 hover:text-white'}`}>
+                     <BellIcon className="w-4 h-4" filled={hasAlert} />
+                     {hasAlert ? 'On' : 'Alert'}
+                 </button>
+                 <div className="w-px h-4 bg-white/10 mx-1"></div>
+                 <button onClick={(e) => { e.stopPropagation(); onCompareToggle(); }} className={`flex-1 flex items-center justify-center gap-1 text-xs py-1 rounded transition-colors ${isCompareSelected ? 'text-secondary font-bold' : 'text-light-200 hover:text-white'}`}>
+                     <CompareIcon className="w-4 h-4" />
+                     Compare
+                 </button>
+             </div>
+        </TiltCard>
+    );
+};
+
+// --- Main Component ---
+interface ToolsPageProps {
+  onBackClick?: () => void;
+  onEnquireClick?: () => void;
+  isLoggedIn?: boolean;
+  favoriteTools?: Tool[];
+  onToggleFavorite?: (tool: Tool) => void;
+}
+
+const ToolsPage: React.FC<ToolsPageProps> = (props) => {
+  // Hooks for context (safely accessed)
+  const authContext = useAuth();
+  const favoritesContext = useFavorites();
+  const alertsContext = usePriceAlerts();
+  const historyContext = useHistory();
+  const ratingsContext = useRatings();
+
+  // State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedDuration, setSelectedDuration] = useState('All Durations');
+  const [selectedTag, setSelectedTag] = useState('All Tags');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [compareList, setCompareList] = useState<string[]>([]);
+  const [selectedTool, setSelectedTool] = useState<Tool | null>(null);
+  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
+
+  // Resolve Data Sources
+  const isLoggedIn = props.isLoggedIn ?? (authContext?.user != null);
+  const favoriteTools = props.favoriteTools ?? favoritesContext?.favoriteTools ?? [];
+  const onToggleFavorite = props.onToggleFavorite ?? favoritesContext?.toggleFavorite ?? (() => {});
+  
+  const recentlyViewed = historyContext?.recentlyViewed || [];
+  const clearHistory = historyContext?.clearHistory || (() => {});
+
+  // Filter Logic
+  const filteredTools = useMemo(() => {
+    const normalizedSearch = searchQuery.toLowerCase().trim();
+    
+    return TOOLS.filter(tool => {
+        const matchesSearch = normalizedSearch === '' || 
+                              (tool.name && tool.name.toLowerCase().includes(normalizedSearch)) || 
+                              (tool.description && tool.description.toLowerCase().includes(normalizedSearch));
+        
+        const matchesCategory = selectedCategory === 'All' || tool.category === selectedCategory;
+        const matchesDuration = selectedDuration === 'All Durations' || tool.duration === selectedDuration;
+        const matchesTag = selectedTag === 'All Tags' || (tool.tags && tool.tags.includes(selectedTag));
+        
+        return matchesSearch && matchesCategory && matchesDuration && matchesTag;
+    });
+  }, [searchQuery, selectedCategory, selectedDuration, selectedTag]);
+
+  const isFiltering = searchQuery !== '' || selectedCategory !== 'All' || selectedDuration !== 'All Durations' || selectedTag !== 'All Tags';
+
+  const clearFilters = () => {
+      setSearchQuery('');
+      setSelectedCategory('All');
+      setSelectedDuration('All Durations');
+      setSelectedTag('All Tags');
+  };
+
+  // Handlers
+  const handleToolClick = (tool: Tool) => {
+      if (historyContext?.addToHistory) {
+          historyContext.addToHistory(tool);
+      }
+      setSelectedTool(tool);
+  };
+
+  const setAlertingTool = (toolName: string, currentPrice?: number) => {
+      if (!alertsContext?.addAlert) return;
+      if (isLoggedIn) {
+          const currentAlert = alertsContext.getAlert(toolName);
+          if (currentAlert) {
+              if(confirm(`Remove price alert for ${toolName}?`)) {
+                  alertsContext.removeAlert(toolName);
+              }
+          } else {
+              const price = prompt(`Set alert price for ${toolName} (Current: $${currentPrice})`, currentPrice?.toString());
+              const parsed = parseFloat(price || '');
+              if (!isNaN(parsed)) {
+                  alertsContext.addAlert(toolName, parsed);
+                  // Auto favorite on alert set
+                  if (!favoriteTools.some(f => f.name === toolName)) {
+                      const fullTool = TOOLS.find(t => t.name === toolName);
+                      if(fullTool) onToggleFavorite(fullTool);
+                  }
+              }
+          }
+      } else {
+          if (authContext?.openLoginModal) authContext.openLoginModal();
+      }
+  };
+
+  const toggleCompare = (toolName: string) => {
+      setCompareList(prev => {
+          if (prev.includes(toolName)) return prev.filter(n => n !== toolName);
+          if (prev.length >= 3) {
+              alert("You can only compare up to 3 tools.");
+              return prev;
+          }
+          return [...prev, toolName];
+      });
+  };
+
+  const getAlert = (name: string) => alertsContext?.getAlert ? alertsContext.getAlert(name) : undefined;
+
+  const handleRate = (toolName: string, rating: number) => {
+      if (!isLoggedIn) {
+          authContext?.openLoginModal();
+          return;
+      }
+      ratingsContext?.rateTool(toolName, rating);
+  };
 
   return (
-    <>
-      <div className="container mx-auto px-6 py-16">
-        <div className="flex flex-col items-center text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
-            Explore Our Toolkit
-          </h1>
-          <p className="max-w-2xl text-lg text-light-200 mb-8">
-            A curated collection of industry-leading software. Click on any logo to learn more.
-          </p>
-          <div className="relative w-full max-w-2xl mb-6">
-            <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-light-200/50">
-              <SearchIcon />
-            </span>
-            <input
-              type="text"
-              placeholder="Search for a tool..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-dark-800 border border-dark-700 text-light-100 rounded-full py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-secondary transition-colors duration-300"
-            />
-          </div>
-
-          <div className="flex flex-col md:flex-row items-center justify-center gap-4 w-full max-w-4xl">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-                {/* Category Dropdown */}
-                <div className="relative w-full" ref={categoryDropdownRef}>
-                    <button
-                        onClick={() => setIsCategoryDropdownOpen(prev => !prev)}
-                        className="w-full flex justify-between items-center bg-dark-800 border border-dark-700 text-light-100 rounded-full py-3 px-4 focus:outline-none focus:ring-2 focus:ring-secondary transition-colors duration-300"
-                        aria-haspopup="listbox"
-                        aria-expanded={isCategoryDropdownOpen}
-                    >
-                        <span className="truncate pr-2">{selectedCategory === 'All' ? 'All Categories' : selectedCategory}</span>
-                        <DropdownArrow isOpen={isCategoryDropdownOpen} />
-                    </button>
-                    {isCategoryDropdownOpen && (
-                         <div 
-                            role="listbox"
-                            className="absolute z-10 mt-2 w-full bg-dark-800 border border-dark-700 rounded-xl shadow-lg max-h-60 overflow-y-auto animate-fade-in"
-                        >
-                            <button
-                                onClick={() => handleCategorySelect('All')}
-                                className={`w-full text-left px-4 py-2 text-light-100 hover:bg-dark-700 transition-colors duration-200 ${selectedCategory === 'All' ? 'font-bold text-secondary' : ''}`}
-                                role="option"
-                                aria-selected={selectedCategory === 'All'}
-                            >
-                                All Categories
-                            </button>
-                            {CATEGORIES.map(category => (
-                                <button
-                                    key={category}
-                                    onClick={() => handleCategorySelect(category)}
-                                    className={`w-full text-left px-4 py-2 text-light-100 hover:bg-dark-700 transition-colors duration-200 ${selectedCategory === category ? 'font-bold text-secondary' : ''}`}
-                                    role="option"
-                                    aria-selected={selectedCategory === category}
-                                >
-                                    {category}
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                </div>
-                {/* Duration Dropdown */}
-                <div className="relative w-full">
-                    <select
-                        value={selectedDuration}
-                        onChange={(e) => setSelectedDuration(e.target.value)}
-                        className="w-full appearance-none bg-dark-800 border border-dark-700 text-light-100 rounded-full py-3 px-4 focus:outline-none focus:ring-2 focus:ring-secondary transition-colors duration-300"
-                        aria-label="Filter by duration"
-                    >
-                        {DURATIONS.map(duration => (
-                            <option key={duration} value={duration}>{duration}</option>
-                        ))}
-                    </select>
-                    <SelectArrow />
-                </div>
-                {/* Tag Dropdown */}
-                <div className="relative w-full">
-                    <select
-                        value={selectedTag}
-                        onChange={(e) => setSelectedTag(e.target.value)}
-                        className="w-full appearance-none bg-dark-800 border border-dark-700 text-light-100 rounded-full py-3 px-4 focus:outline-none focus:ring-2 focus:ring-secondary transition-colors duration-300"
-                        aria-label="Filter by tag"
-                    >
-                        {TAGS.map(tag => (
-                            <option key={tag} value={tag}>{tag}</option>
-                        ))}
-                    </select>
-                    <SelectArrow />
-                </div>
-            </div>
-            
-            {/* View Mode Toggle */}
-            <div className="bg-dark-800 border border-dark-700 rounded-full p-1 flex items-center shrink-0 mt-4 md:mt-0">
-                <button
-                    onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded-full transition-colors duration-200 ${viewMode === 'grid' ? 'bg-dark-700 text-white shadow-sm' : 'text-light-200 hover:text-white'}`}
-                    aria-label="Grid View"
-                >
-                    <GridIcon />
-                </button>
-                <button
-                    onClick={() => setViewMode('list')}
-                    className={`p-2 rounded-full transition-colors duration-200 ${viewMode === 'list' ? 'bg-dark-700 text-white shadow-sm' : 'text-light-200 hover:text-white'}`}
-                    aria-label="List View"
-                >
-                    <ListIcon />
-                </button>
-            </div>
-          </div>
-          
-          <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
-            {(searchQuery || selectedCategory !== 'All' || selectedDuration !== 'All Durations' || selectedTag !== 'All Tags' || showFavoritesOnly) && (
-              <button
-                onClick={handleClearFilters}
-                className="text-secondary hover:text-blue-400 font-semibold transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-secondary/50 rounded-full px-4 py-1 text-sm"
-              >
-                Clear Filters
-              </button>
-            )}
-            {isLoggedIn && (
-                <button
-                    onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                    className={`flex items-center gap-2 font-semibold transition-colors duration-300 rounded-full px-4 py-2 text-sm ${
-                        showFavoritesOnly
-                            ? 'bg-yellow-400/20 text-yellow-300 border border-yellow-400'
-                            : 'text-light-200/70 hover:text-yellow-400 border border-dark-700 hover:border-yellow-400/50'
-                    }`}
-                >
-                    <StarIcon filled={showFavoritesOnly} className="w-4 h-4" />
-                    My Favorites {showFavoritesOnly ? `(${favoriteTools.length})` : ''}
-                </button>
-            )}
-          </div>
-
-        </div>
+    <div className="container mx-auto px-6 py-12 pb-32 relative">
         
-        {selectedCategory !== 'All' && CATEGORY_DESCRIPTIONS[selectedCategory] && (
-            <div className="text-center max-w-3xl mx-auto mb-12 -mt-2">
-                <p className="text-lg text-light-200">{CATEGORY_DESCRIPTIONS[selectedCategory]}</p>
+        {/* Header & Search */}
+        <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="mb-12 text-center"
+        >
+            <h1 className="text-4xl md:text-5xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-light-100 via-secondary to-light-100 animate-gradient-x">
+                Explore Our Universe
+            </h1>
+            <div className="max-w-2xl mx-auto relative group">
+                <SearchIcon className="absolute left-4 top-3.5 text-light-200/50 group-focus-within:text-secondary transition-colors" />
+                <input 
+                    type="text"
+                    placeholder="Search for tools, categories, or software..."
+                    className="w-full bg-dark-800/80 backdrop-blur-md border border-white/10 text-light-100 rounded-full py-3 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent transition-all shadow-lg group-hover:shadow-secondary/10"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
             </div>
-        )}
+        </motion.div>
 
-        <div className="bg-dark-800/50 rounded-xl p-4 text-center mb-12">
-            <p className="text-light-200">
-                Can't find the tool you're looking for? Let us know!
-            </p>
-            <button
-                onClick={onEnquireClick}
-                className="mt-3 bg-secondary text-white font-bold py-2 px-6 rounded-full text-base hover:bg-blue-500 transform hover:scale-105 transition-all duration-300 shadow-md hover:shadow-secondary/40 focus:outline-none focus:ring-4 focus:ring-secondary/50"
+        {/* Recently Viewed */}
+        {recentlyViewed.length > 0 && (
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mb-12 w-full"
             >
-                Enquire for a Tool
-            </button>
-        </div>
-
-        {filteredTools.length > 0 ? (
-            viewMode === 'grid' ? (
-                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-x-4 gap-y-6">
-                    {filteredTools.map((tool) => (
-                        <ToolCard
-                            key={`${tool.name}-${tool.category}`}
-                            tool={tool}
-                            onClick={() => setSelectedTool(tool)}
-                            isLoggedIn={isLoggedIn}
-                            isFavorite={favoriteTools.some(fav => fav.name === tool.name)}
-                            onFavoriteClick={() => onToggleFavorite(tool)}
-                        />
+                 <div className="flex justify-between items-center mb-4 px-2 border-b border-white/10 pb-2">
+                    <div className="flex items-center gap-2">
+                        <h2 className="text-light-200 font-bold text-sm uppercase tracking-wider flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+                            Recently Viewed
+                        </h2>
+                    </div>
+                    <button 
+                        onClick={clearHistory}
+                        className="text-xs text-red-400 hover:text-red-300 transition-colors"
+                    >
+                        Clear History
+                    </button>
+                </div>
+                <div className="flex overflow-x-auto gap-4 pb-4 scroll-smooth no-scrollbar p-1 mask-image-gradient-r">
+                    {recentlyViewed.map((tool) => (
+                         <div key={`recent-${tool.name}`} className="min-w-[180px] max-w-[180px] flex-shrink-0">
+                             <ToolCard
+                                tool={tool}
+                                onClick={() => handleToolClick(tool)}
+                                isLoggedIn={isLoggedIn}
+                                isFavorite={favoriteTools.some(fav => fav.name === tool.name)}
+                                onFavoriteClick={() => onToggleFavorite(tool)}
+                                stats={ratingsContext?.getToolStats?.(tool.name) || { average: 0, count: 0 }}
+                                hasAlert={!!getAlert(tool.name)}
+                                onAlertClick={() => setAlertingTool(tool.name, tool.offerPrice)}
+                                isCompareSelected={compareList.includes(tool.name)}
+                                onCompareToggle={() => toggleCompare(tool.name)}
+                            />
+                         </div>
                     ))}
                 </div>
-            ) : (
-                 <div className="flex flex-col gap-4 max-w-5xl mx-auto">
-                    {filteredTools.map((tool) => (
-                        <ToolListItem
-                            key={`${tool.name}-${tool.category}`}
-                            tool={tool}
-                            onClick={() => setSelectedTool(tool)}
-                            isLoggedIn={isLoggedIn}
-                            isFavorite={favoriteTools.some(fav => fav.name === tool.name)}
-                            onFavoriteClick={() => onToggleFavorite(tool)}
-                        />
-                    ))}
-                </div>
-            )
-        ) : (
-            <div className="text-center py-16">
-                <p className="text-xl text-light-200">No tools found matching your criteria.</p>
-                {showFavoritesOnly && <p className="text-light-200/70 mt-2">You haven't favorited any tools yet. Click the star icon on a tool to save it!</p>}
-            </div>
+            </motion.div>
         )}
 
-        <div className="text-center mt-16">
-          <button
-            onClick={onBackClick}
-            className="bg-dark-700 text-light-100 font-bold py-3 px-8 rounded-full text-lg hover:bg-dark-600 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-dark-600/50"
-          >
-            &larr; Back to Home
-          </button>
+        {/* Filters */}
+        <div className="flex flex-col md:flex-row gap-8 mb-8">
+            <div className="w-full md:w-1/4 space-y-6">
+                {/* Categories */}
+                <div className="bg-dark-800/60 backdrop-blur-md rounded-2xl p-4 border border-white/10 sticky top-24 shadow-lg">
+                    <h3 className="font-bold text-light-100 mb-3 px-2 flex items-center gap-2">
+                        <ListIcon className="w-4 h-4 text-secondary" /> Categories
+                    </h3>
+                    <div className="space-y-1 max-h-[60vh] overflow-y-auto no-scrollbar">
+                        <button 
+                            onClick={() => setSelectedCategory('All')}
+                            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-200 ${selectedCategory === 'All' ? 'bg-secondary text-white shadow-md' : 'text-light-200 hover:bg-white/5'}`}
+                        >
+                            All Categories
+                        </button>
+                        {CATEGORIES.map(cat => (
+                            <button 
+                                key={cat}
+                                onClick={() => setSelectedCategory(cat)}
+                                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-200 truncate ${selectedCategory === cat ? 'bg-secondary text-white shadow-md' : 'text-light-200 hover:bg-white/5'}`}
+                                title={cat}
+                            >
+                                {cat}
+                            </button>
+                        ))}
+                    </div>
+                    
+                     <div className="mt-6 pt-6 border-t border-white/10 space-y-4">
+                        <div>
+                            <label className="block text-xs font-bold text-light-200 mb-2 uppercase tracking-wider">Duration</label>
+                            <select 
+                                value={selectedDuration} 
+                                onChange={(e) => setSelectedDuration(e.target.value)}
+                                className="w-full bg-dark-900/80 border border-white/10 rounded-lg px-3 py-2 text-sm text-light-200 focus:ring-1 focus:ring-secondary outline-none"
+                            >
+                                {DURATIONS.map(d => <option key={d} value={d}>{d}</option>)}
+                            </select>
+                        </div>
+                        <div>
+                             <label className="block text-xs font-bold text-light-200 mb-2 uppercase tracking-wider">Tags</label>
+                            <select 
+                                value={selectedTag} 
+                                onChange={(e) => setSelectedTag(e.target.value)}
+                                className="w-full bg-dark-900/80 border border-white/10 rounded-lg px-3 py-2 text-sm text-light-200 focus:ring-1 focus:ring-secondary outline-none"
+                            >
+                                {TAGS.map(t => <option key={t} value={t}>{t}</option>)}
+                            </select>
+                        </div>
+                        
+                        {isFiltering && (
+                             <button 
+                                onClick={clearFilters}
+                                className="w-full mt-2 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-semibold py-2 rounded-lg text-sm transition-colors"
+                             >
+                                Reset All Filters
+                             </button>
+                        )}
+                     </div>
+                </div>
+            </div>
+
+            {/* Grid */}
+            <div className="w-full md:w-3/4">
+                <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+                    <p className="text-light-200 text-sm">
+                        Showing <span className="font-bold text-white">{filteredTools.length}</span> {filteredTools.length === 1 ? 'tool' : 'tools'}
+                    </p>
+                    <div className="flex gap-2 bg-dark-800/50 p-1 rounded-lg border border-white/10">
+                        <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded transition-colors ${viewMode === 'grid' ? 'bg-white/10 text-white shadow-sm' : 'text-light-200 hover:text-white'}`}>
+                            <GridIcon className="w-5 h-5" />
+                        </button>
+                        <button onClick={() => setViewMode('list')} className={`p-1.5 rounded transition-colors ${viewMode === 'list' ? 'bg-white/10 text-white shadow-sm' : 'text-light-200 hover:text-white'}`}>
+                            <ListIcon className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
+                
+                 <div className="mb-6 text-center sm:text-left">
+                    <p className="text-sm text-light-200/80 italic bg-secondary/5 border border-secondary/10 p-3 rounded-lg inline-block">
+                        {selectedCategory === 'All' 
+                            ? "Browsing all tools. Use filters to narrow your search." 
+                            : CATEGORY_DESCRIPTIONS[selectedCategory]}
+                    </p>
+                </div>
+
+                <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+                    {filteredTools.map((tool, idx) => (
+                        <motion.div
+                            key={tool.name}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.4, delay: idx * 0.05 }}
+                        >
+                            <ToolCard 
+                                tool={tool}
+                                onClick={() => handleToolClick(tool)}
+                                isLoggedIn={isLoggedIn}
+                                isFavorite={favoriteTools.some(fav => fav.name === tool.name)}
+                                onFavoriteClick={() => onToggleFavorite(tool)}
+                                stats={ratingsContext?.getToolStats?.(tool.name) || { average: 0, count: 0 }}
+                                hasAlert={!!getAlert(tool.name)}
+                                onAlertClick={() => setAlertingTool(tool.name, tool.offerPrice)}
+                                isCompareSelected={compareList.includes(tool.name)}
+                                onCompareToggle={() => toggleCompare(tool.name)}
+                            />
+                        </motion.div>
+                    ))}
+                </div>
+                
+                {filteredTools.length === 0 && (
+                    <div className="text-center py-20 bg-dark-800/50 rounded-xl border border-dashed border-white/10 backdrop-blur-sm">
+                        <div className="mb-4 bg-white/5 w-16 h-16 rounded-full flex items-center justify-center mx-auto">
+                             <SearchIcon className="w-8 h-8 text-light-200/30" />
+                        </div>
+                        <p className="text-xl text-light-200 font-bold">No tools found</p>
+                        <p className="text-light-200/60 mt-2">Try adjusting your filters or search query.</p>
+                        <button 
+                            onClick={clearFilters}
+                            className="mt-4 text-secondary hover:underline font-medium"
+                        >
+                            Clear all filters
+                        </button>
+                    </div>
+                )}
+                
+                <div className="mt-12 text-center">
+                     <p className="text-light-200 mb-4">Don't see what you're looking for?</p>
+                     {props.onEnquireClick ? (
+                        <button
+                            onClick={props.onEnquireClick}
+                            className="bg-dark-800/80 border border-white/10 text-light-100 font-bold py-3 px-8 rounded-full text-lg hover:bg-secondary hover:border-secondary transition-all duration-300 backdrop-blur-sm"
+                        >
+                            Enquire for a Tool
+                        </button>
+                     ) : (
+                         <Link
+                            href="/enquire"
+                            className="inline-block bg-dark-800/80 border border-white/10 text-light-100 font-bold py-3 px-8 rounded-full text-lg hover:bg-secondary hover:border-secondary transition-all duration-300 backdrop-blur-sm"
+                        >
+                            Enquire for a Tool
+                        </Link>
+                     )}
+                </div>
+            </div>
         </div>
-      </div>
-      {selectedTool && <ToolDetailModal
-        tool={selectedTool}
-        onClose={() => setSelectedTool(null)}
-        isLoggedIn={isLoggedIn}
-        isFavorite={favoriteTools.some(fav => fav.name === selectedTool.name)}
-        onFavoriteClick={() => onToggleFavorite(selectedTool)}
-      />}
-    </>
+
+        {/* Floating Compare Bar */}
+        {compareList.length > 0 && (
+            <motion.div 
+                initial={{ y: 100 }}
+                animate={{ y: 0 }}
+                className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 bg-dark-800/90 backdrop-blur-lg border border-secondary/50 shadow-2xl shadow-secondary/20 rounded-full px-6 py-3 flex items-center gap-6"
+            >
+                <div className="flex items-center gap-2">
+                    <CompareIcon className="w-5 h-5 text-secondary" />
+                    <span className="font-bold text-white">{compareList.length} selected</span>
+                </div>
+                <div className="h-6 w-px bg-white/10"></div>
+                <button 
+                    onClick={() => setIsCompareModalOpen(true)}
+                    className="text-white font-bold hover:text-secondary transition-colors text-sm"
+                >
+                    Compare Now
+                </button>
+                <button 
+                    onClick={() => setCompareList([])}
+                    className="text-light-200 hover:text-red-400 transition-colors text-sm"
+                >
+                    Clear
+                </button>
+            </motion.div>
+        )}
+
+        {/* Modals */}
+        {selectedTool && (
+            <ToolDetailModal 
+                tool={selectedTool} 
+                onClose={() => setSelectedTool(null)}
+                isLoggedIn={isLoggedIn}
+                isFavorite={favoriteTools.some(fav => fav.name === selectedTool.name)}
+                onFavoriteClick={() => onToggleFavorite(selectedTool)}
+                userRating={ratingsContext?.userRatings?.[selectedTool.name] || 0}
+                onRate={(r: number) => handleRate(selectedTool.name, r)}
+                hasAlert={!!getAlert(selectedTool.name)}
+                onAlertClick={() => setAlertingTool(selectedTool.name, selectedTool.offerPrice)}
+            />
+        )}
+
+        {isCompareModalOpen && (
+            <ComparisonModal 
+                tools={TOOLS.filter(t => compareList.includes(t.name))} 
+                onClose={() => setIsCompareModalOpen(false)}
+                onRemove={(name) => setCompareList(prev => prev.filter(n => n !== name))}
+            />
+        )}
+    </div>
   );
 };
 

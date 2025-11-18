@@ -1,7 +1,9 @@
 
+'use client';
+
 import React, { useEffect, useState } from 'react';
 import { GoogleIcon, LogoIcon } from './icons';
-import { api } from '../services/api';
+import { useAuth } from './Providers';
 
 interface LoginPageProps {
     onLoginSuccess: () => void;
@@ -9,8 +11,10 @@ interface LoginPageProps {
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onClose }) => {
+    const { login } = useAuth();
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         const handleEsc = (event: KeyboardEvent) => {
@@ -24,15 +28,29 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onClose }) => {
         };
     }, [onClose]);
 
+    const validateEmail = (email: string) => {
+        const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        return re.test(String(email).toLowerCase());
+    };
+
     const handleLogin = async () => {
-        if(!email) return;
+        setError('');
+        if(!email.trim()) {
+            setError("Email is required");
+            return;
+        }
+        if (!validateEmail(email.trim())) {
+            setError("Please enter a valid email address.");
+            return;
+        }
+
         setLoading(true);
         try {
-            // In a real app, this would handle Google OAuth or Password auth
-            await api.login(email);
+            await login(email.trim());
             onLoginSuccess();
         } catch (error) {
             console.error(error);
+            setError("Login failed. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -43,7 +61,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onClose }) => {
             role="dialog"
             aria-modal="true"
             aria-labelledby="login-title"
-            className="fixed inset-0 bg-dark-900/80 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in"
+            className="fixed inset-0 bg-dark-900/80 backdrop-blur-sm flex items-center justify-center z-[100] animate-fade-in"
             onClick={onClose}
         >
             <div
@@ -66,13 +84,17 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onClose }) => {
                 </div>
 
                 <div className="space-y-4">
-                    <input 
-                        type="email"
-                        placeholder="name@company.com"
-                        className="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-secondary focus:outline-none"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                    />
+                    <div>
+                        <input 
+                            type="email"
+                            placeholder="name@company.com"
+                            className={`w-full bg-dark-900 border ${error ? 'border-red-500' : 'border-dark-600'} rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-secondary focus:outline-none`}
+                            value={email}
+                            onChange={(e) => { setEmail(e.target.value); setError(''); }}
+                            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                        />
+                        {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
+                    </div>
 
                     <button
                         onClick={handleLogin}

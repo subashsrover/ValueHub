@@ -1,15 +1,10 @@
-
 'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import type { Enquiry } from '../types';
+import type { Enquiry } from '../../types';
 
-interface EnquirePageProps {
-  onBackClick?: () => void;
-}
-
-export default function EnquirePage({ onBackClick }: EnquirePageProps) {
+export default function EnquirePage() {
   const [formData, setFormData] = useState<Omit<Enquiry, 'submittedAt'>>({
     toolName: '',
     name: '',
@@ -24,37 +19,25 @@ export default function EnquirePage({ onBackClick }: EnquirePageProps) {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const validateEmail = (email: string) => {
-      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      return re.test(email);
-  };
-
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!formData.toolName.trim() || !formData.name.trim() || !formData.email.trim()) {
+    if (!formData.toolName || !formData.name || !formData.email) {
       setError('Please fill out all required fields.');
       return;
     }
-    if (!validateEmail(formData.email)) {
-        setError('Please enter a valid email address.');
-        return;
-    }
-
     setError('');
 
     // Save enquiry to localStorage to simulate a database
     try {
       const newEnquiry: Enquiry = {
-        toolName: formData.toolName.trim(),
-        name: formData.name.trim(),
-        email: formData.email.trim(),
-        reason: formData.reason.trim(),
+        ...formData,
         submittedAt: new Date().toISOString(),
       };
       const existingEnquiriesRaw = localStorage.getItem('enquiries');
       const existingEnquiries: Enquiry[] = existingEnquiriesRaw ? JSON.parse(existingEnquiriesRaw) : [];
       const updatedEnquiries = [...existingEnquiries, newEnquiry];
       localStorage.setItem('enquiries', JSON.stringify(updatedEnquiries));
+      console.log('Enquiry saved to DB:', newEnquiry);
     } catch (err) {
       console.error('Failed to save enquiry to localStorage:', err);
       setError('There was an error submitting your enquiry. Please try again.');
@@ -71,21 +54,12 @@ export default function EnquirePage({ onBackClick }: EnquirePageProps) {
         <p className="text-lg text-light-200 mb-8">
           Your enquiry has been submitted successfully. We'll review your request and get back to you shortly.
         </p>
-        {onBackClick ? (
-            <button
-                onClick={onBackClick}
-                className="inline-block bg-secondary text-white font-bold py-3 px-8 rounded-full text-lg hover:bg-blue-500 transition-colors duration-300"
-            >
-                Back to Tools
-            </button>
-        ) : (
-            <Link
-            href="/tools"
-            className="inline-block bg-secondary text-white font-bold py-3 px-8 rounded-full text-lg hover:bg-blue-500 transition-colors duration-300"
-            >
-            Back to Tools
-            </Link>
-        )}
+        <Link
+          href="/tools"
+          className="inline-block bg-secondary text-white font-bold py-3 px-8 rounded-full text-lg hover:bg-blue-500 transition-colors duration-300"
+        >
+          Back to Tools
+        </Link>
       </div>
     );
   }
@@ -158,22 +132,12 @@ export default function EnquirePage({ onBackClick }: EnquirePageProps) {
             >
               Submit Enquiry
             </button>
-            {onBackClick ? (
-                <button
-                    type="button"
-                    onClick={onBackClick}
-                    className="w-full sm:w-auto text-center text-light-100 font-bold py-3 px-8 rounded-full text-lg hover:bg-dark-700 transition-colors duration-300"
-                >
-                    Cancel
-                </button>
-            ) : (
-                <Link
-                href="/tools"
-                className="w-full sm:w-auto text-center text-light-100 font-bold py-3 px-8 rounded-full text-lg hover:bg-dark-700 transition-colors duration-300"
-                >
-                Cancel
-                </Link>
-            )}
+            <Link
+              href="/tools"
+              className="w-full sm:w-auto text-center text-light-100 font-bold py-3 px-8 rounded-full text-lg hover:bg-dark-700 transition-colors duration-300"
+            >
+              Cancel
+            </Link>
           </div>
         </form>
       </div>

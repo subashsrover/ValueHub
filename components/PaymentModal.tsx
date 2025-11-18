@@ -15,13 +15,36 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, onSuccess, planNam
     const [cardNumber, setCardNumber] = useState('');
     const [expiry, setExpiry] = useState('');
     const [cvc, setCvc] = useState('');
+    const [error, setError] = useState('');
+
+    const handleCardChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        // Only allow numbers and spaces
+        const val = e.target.value.replace(/[^0-9\s]/g, '');
+        setCardNumber(val);
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError('');
+
+        // Basic Validation
+        if (cardNumber.replace(/\s/g, '').length < 13) {
+            setError("Invalid card number.");
+            return;
+        }
+        if (cvc.length < 3) {
+            setError("Invalid CVC.");
+            return;
+        }
+
         setIsProcessing(true);
 
         const user = api.getCurrentUser();
-        if (!user) return;
+        if (!user) {
+            setError("User session not found. Please log in again.");
+            setIsProcessing(false);
+            return;
+        }
 
         try {
             // Simulate API call to Stripe/Backend
@@ -29,13 +52,14 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, onSuccess, planNam
             onSuccess();
         } catch (error) {
             console.error("Payment failed", error);
+            setError("Payment failed. Please try again.");
         } finally {
             setIsProcessing(false);
         }
     };
 
     return (
-        <div className="fixed inset-0 bg-dark-900/90 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+        <div className="fixed inset-0 bg-dark-900/90 backdrop-blur-sm flex items-center justify-center z-[100] animate-fade-in">
             <div className="bg-dark-800 rounded-2xl p-8 max-w-md w-full m-4 shadow-2xl border border-dark-700">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-bold text-light-100">Upgrade to {planName}</h2>
@@ -60,7 +84,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, onSuccess, planNam
                             placeholder="0000 0000 0000 0000"
                             className="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-secondary focus:outline-none"
                             value={cardNumber}
-                            onChange={(e) => setCardNumber(e.target.value)}
+                            onChange={handleCardChange}
+                            maxLength={19}
                             required
                         />
                     </div>
@@ -73,27 +98,31 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, onSuccess, planNam
                                 className="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-secondary focus:outline-none"
                                 value={expiry}
                                 onChange={(e) => setExpiry(e.target.value)}
+                                maxLength={5}
                                 required
                             />
                         </div>
                         <div>
                             <label className="block text-xs font-bold text-light-200 mb-1 uppercase">CVC</label>
                             <input 
-                                type="text" 
+                                type="password" 
                                 placeholder="123"
                                 className="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-secondary focus:outline-none"
                                 value={cvc}
-                                onChange={(e) => setCvc(e.target.value)}
+                                onChange={(e) => setCvc(e.target.value.replace(/[^0-9]/g, ''))}
+                                maxLength={4}
                                 required
                             />
                         </div>
                     </div>
 
+                    {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+
                     <div className="pt-4">
                         <button 
                             type="submit" 
                             disabled={isProcessing}
-                            className="w-full bg-secondary hover:bg-blue-600 text-white font-bold py-4 rounded-xl transition-all duration-300 flex items-center justify-center"
+                            className="w-full bg-secondary hover:bg-blue-600 text-white font-bold py-4 rounded-xl transition-all duration-300 flex items-center justify-center shadow-lg shadow-secondary/20"
                         >
                             {isProcessing ? (
                                 <span className="animate-pulse">Processing...</span>

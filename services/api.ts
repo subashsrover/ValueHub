@@ -1,4 +1,3 @@
-
 import type { User, PlanTier } from '../types';
 
 // STORAGE KEYS
@@ -18,6 +17,7 @@ const SEED_ADMIN: User = {
 
 // HELPER: Get all users
 const getAllUsersFromStorage = (): User[] => {
+  if (typeof window === 'undefined') return []; // SSR Guard
   const stored = localStorage.getItem(USERS_KEY);
   if (!stored) {
     localStorage.setItem(USERS_KEY, JSON.stringify([SEED_ADMIN]));
@@ -28,6 +28,7 @@ const getAllUsersFromStorage = (): User[] => {
 
 // HELPER: Save users
 const saveUsersToStorage = (users: User[]) => {
+  if (typeof window === 'undefined') return;
   localStorage.setItem(USERS_KEY, JSON.stringify(users));
 };
 
@@ -64,10 +65,13 @@ export const api = {
   },
 
   logout: async () => {
-    localStorage.removeItem(CURRENT_USER_KEY);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(CURRENT_USER_KEY);
+    }
   },
 
   getCurrentUser: (): User | null => {
+    if (typeof window === 'undefined') return null;
     const stored = localStorage.getItem(CURRENT_USER_KEY);
     return stored ? JSON.parse(stored) : null;
   },

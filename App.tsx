@@ -12,6 +12,8 @@ import DisclaimerPage from './components/DisclaimerPage';
 import EULAPage from './components/EULAPage';
 import AdminDashboard from './components/AdminDashboard';
 import PaymentModal from './components/PaymentModal';
+import ChatBot from './components/ChatBot';
+import AnimatedBackground from './components/AnimatedBackground'; // Import
 import type { Tool, User } from './types';
 import { TOOLS } from './constants';
 import { api } from './services/api';
@@ -35,8 +37,9 @@ const App: React.FC = () => {
     const currentUser = api.getCurrentUser();
     if (currentUser) {
       setUser(currentUser);
-      loadFavorites();
     }
+    // Load favorites for everyone
+    loadFavorites();
   }, []);
 
   const loadFavorites = () => {
@@ -82,13 +85,14 @@ const App: React.FC = () => {
     const currentUser = api.getCurrentUser();
     setUser(currentUser);
     setIsLoginModalOpen(false);
+    // Favorites are already loaded, but we could reload if we merged backend favorites in a real app
     loadFavorites();
   };
 
   const handleLogout = async () => {
     await api.logout();
     setUser(null);
-    setFavoriteTools([]);
+    // We keep favorites locally even after logout in this implementation as they are localStorage based
     if (currentPage === 'admin') navigateTo('home');
   };
 
@@ -124,7 +128,8 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen font-sans">
+    <div className="flex flex-col min-h-screen font-sans relative z-0">
+      <AnimatedBackground /> {/* Add Background */}
       <Header 
         onHomeClick={() => navigateTo('home')}
         isLoggedIn={!!user}
@@ -152,6 +157,7 @@ const App: React.FC = () => {
         onDisclaimerClick={() => navigateTo('disclaimer')}
         onEULAClick={() => navigateTo('eula')}
       />
+      <ChatBot />
       {isLoginModalOpen && <LoginPage onLoginSuccess={handleLoginSuccess} onClose={() => setIsLoginModalOpen(false)} />}
       {isPaymentModalOpen && <PaymentModal onClose={() => setIsPaymentModalOpen(false)} onSuccess={handlePaymentSuccess} planName="Value Hub Pro" price="$29.00" />}
     </div>
