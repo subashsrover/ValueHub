@@ -3,16 +3,16 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { TOOLS, CATEGORIES, CATEGORY_DESCRIPTIONS, DURATIONS, TAGS, TAG_COLORS } from '../constants';
+import { TOOLS, CATEGORIES, CATEGORY_DESCRIPTIONS, TAG_COLORS } from '../constants';
 import type { Tool } from '../types';
 import { 
-    SearchIcon, StarIcon, BellIcon, CompareIcon, CheckIcon, HeartIcon, ZapIcon, GridIcon, ListIcon 
+    SearchIcon, StarIcon, BellIcon, CompareIcon, HeartIcon, ZapIcon, GridIcon, ListIcon, ListIcon as MenuIcon 
 } from './icons';
 import { useAuth, useFavorites, usePriceAlerts, useHistory, useRatings } from './Providers';
 import Link from 'next/link';
 
 // --- 3D Tilt Card Wrapper ---
-const TiltCard = ({ children, className, onClick }: { children: React.ReactNode, className?: string, onClick?: () => void }) => {
+const TiltCard = ({ children, className, onClick }: { children?: React.ReactNode, className?: string, onClick?: () => void }) => {
     const x = useMotionValue(0);
     const y = useMotionValue(0);
 
@@ -53,7 +53,7 @@ const TiltCard = ({ children, className, onClick }: { children: React.ReactNode,
     );
 };
 
-// --- Tool Detail Modal (Unchanged Logic, Updated UI for consistency) ---
+// --- Tool Detail Modal ---
 const ToolDetailModal = ({ tool, onClose, isLoggedIn, isFavorite, onFavoriteClick, userRating, onRate, hasAlert, onAlertClick }: any) => {
     useEffect(() => {
         const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -97,8 +97,8 @@ const ToolDetailModal = ({ tool, onClose, isLoggedIn, isFavorite, onFavoriteClic
                          <div>
                              {tool.originalPrice && <span className="text-light-200/50 line-through text-sm">Was ${tool.originalPrice}</span>}
                              <div className="text-3xl font-bold text-green-400 flex items-baseline gap-2">
-                                 ${tool.offerPrice || 0}
-                                 <span className="text-sm text-light-200 font-normal">/ {tool.duration}</span>
+                                 ${tool.offerPrice != null ? `$${tool.offerPrice}` : 'Free'}
+                                 <span className="text-sm text-light-200 font-normal">/ {tool.duration || 'Lifetime'}</span>
                              </div>
                          </div>
                          <div className="flex gap-3">
@@ -208,7 +208,6 @@ const ComparisonModal = ({ tools, onClose, onRemove }: { tools: Tool[], onClose:
                                 <td className="p-4 border-b border-dark-700 font-bold">Website</td>
                                 {tools.map(tool => (
                                     <td key={tool.name} className="p-4 border-b border-dark-700">
-                                         {/* Security: Prevent tabnabbing */}
                                         <a href={`https://${(tool as any).domain}`} target="_blank" rel="noopener noreferrer" className="text-secondary hover:underline text-sm">
                                             Visit Site &rarr;
                                         </a>
@@ -359,6 +358,23 @@ const ToolsPage: React.FC<ToolsPageProps> = (props) => {
   const recentlyViewed = historyContext?.recentlyViewed || [];
   const clearHistory = historyContext?.clearHistory || (() => {});
 
+  // Dynamic Filter Options
+  const availableDurations = useMemo(() => {
+      const durationSet = new Set<string>();
+      TOOLS.forEach(tool => {
+          if(tool.duration) durationSet.add(tool.duration);
+      });
+      return ['All Durations', ...Array.from(durationSet).sort()];
+  }, []);
+
+  const availableTags = useMemo(() => {
+      const tagSet = new Set<string>();
+      TOOLS.forEach(tool => {
+          if(tool.tags) tool.tags.forEach(tag => tagSet.add(tag));
+      });
+      return ['All Tags', ...Array.from(tagSet).sort()];
+  }, []);
+
   // Filter Logic
   const filteredTools = useMemo(() => {
     const normalizedSearch = searchQuery.toLowerCase().trim();
@@ -395,26 +411,23 @@ const ToolsPage: React.FC<ToolsPageProps> = (props) => {
 
   const setAlertingTool = (toolName: string, currentPrice?: number) => {
       if (!alertsContext?.addAlert) return;
-      if (isLoggedIn) {
-          const currentAlert = alertsContext.getAlert(toolName);
-          if (currentAlert) {
-              if(confirm(`Remove price alert for ${toolName}?`)) {
-                  alertsContext.removeAlert(toolName);
-              }
-          } else {
-              const price = prompt(`Set alert price for ${toolName} (Current: $${currentPrice})`, currentPrice?.toString());
-              const parsed = parseFloat(price || '');
-              if (!isNaN(parsed)) {
-                  alertsContext.addAlert(toolName, parsed);
-                  // Auto favorite on alert set
-                  if (!favoriteTools.some(f => f.name === toolName)) {
-                      const fullTool = TOOLS.find(t => t.name === toolName);
-                      if(fullTool) onToggleFavorite(fullTool);
-                  }
-              }
+      // Allow non-logged-in for demo, but logic should check user
+      const currentAlert = alertsContext.getAlert(toolName);
+      if (currentAlert) {
+          if(confirm(`Remove price alert for ${toolName}?`)) {
+              alertsContext.removeAlert(toolName);
           }
       } else {
-          if (authContext?.openLoginModal) authContext.openLoginModal();
+          const price = prompt(`Set alert price for ${toolName} (Current: $${currentPrice})`, currentPrice?.toString());
+          const parsed = parseFloat(price || '');
+          if (!isNaN(parsed)) {
+              alertsContext.addAlert(toolName, parsed);
+              // Auto favorite on alert set
+              if (!favoriteTools.some(f => f.name === toolName)) {
+                  const fullTool = TOOLS.find(t => t.name === toolName);
+                  if(fullTool) onToggleFavorite(fullTool);
+              }
+          }
       }
   };
 
@@ -447,7 +460,7 @@ const ToolsPage: React.FC<ToolsPageProps> = (props) => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="mb-12 text-center"
+            className="mb-8 text-center"
         >
             <h1 className="text-4xl md:text-5xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-light-100 via-secondary to-light-100 animate-gradient-x">
                 Explore Our Universe
@@ -457,12 +470,52 @@ const ToolsPage: React.FC<ToolsPageProps> = (props) => {
                 <input 
                     type="text"
                     placeholder="Search for tools, categories, or software..."
-                    className="w-full bg-dark-800/80 backdrop-blur-md border border-white/10 text-light-100 rounded-full py-3 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent transition-all shadow-lg group-hover:shadow-secondary/10"
+                    className="w-full bg-dark-800/80 backdrop-blur-md border border-white/10 text-light-100 rounded-full py-3 pl-12 pr-10 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent transition-all shadow-lg group-hover:shadow-secondary/10"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
+                {searchQuery && (
+                    <button 
+                        onClick={() => setSearchQuery('')}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-light-200 hover:text-white bg-dark-700 rounded-full p-1 w-6 h-6 flex items-center justify-center transition-colors"
+                    >
+                        &times;
+                    </button>
+                )}
             </div>
         </motion.div>
+        
+        {/* Active Filters Summary */}
+        {isFiltering && (
+            <div className="mb-8 max-w-4xl mx-auto flex flex-wrap items-center justify-center gap-2">
+                <span className="text-xs font-bold text-light-200 uppercase tracking-wider mr-2">Active Filters:</span>
+                {searchQuery && (
+                    <div className="flex items-center gap-1 bg-secondary/20 text-secondary text-xs px-3 py-1 rounded-full border border-secondary/30">
+                        Search: "{searchQuery}"
+                        <button onClick={() => setSearchQuery('')} className="ml-1 hover:text-white">&times;</button>
+                    </div>
+                )}
+                {selectedCategory !== 'All' && (
+                    <div className="flex items-center gap-1 bg-purple-500/20 text-purple-300 text-xs px-3 py-1 rounded-full border border-purple-500/30">
+                        Cat: {selectedCategory}
+                        <button onClick={() => setSelectedCategory('All')} className="ml-1 hover:text-white">&times;</button>
+                    </div>
+                )}
+                {selectedDuration !== 'All Durations' && (
+                    <div className="flex items-center gap-1 bg-green-500/20 text-green-300 text-xs px-3 py-1 rounded-full border border-green-500/30">
+                        {selectedDuration}
+                        <button onClick={() => setSelectedDuration('All Durations')} className="ml-1 hover:text-white">&times;</button>
+                    </div>
+                )}
+                {selectedTag !== 'All Tags' && (
+                    <div className="flex items-center gap-1 bg-orange-500/20 text-orange-300 text-xs px-3 py-1 rounded-full border border-orange-500/30">
+                        Tag: {selectedTag}
+                        <button onClick={() => setSelectedTag('All Tags')} className="ml-1 hover:text-white">&times;</button>
+                    </div>
+                )}
+                <button onClick={clearFilters} className="text-xs text-red-400 hover:underline ml-2">Clear All</button>
+            </div>
+        )}
 
         {/* Recently Viewed */}
         {recentlyViewed.length > 0 && (
@@ -506,13 +559,13 @@ const ToolsPage: React.FC<ToolsPageProps> = (props) => {
             </motion.div>
         )}
 
-        {/* Filters */}
+        {/* Filters & Grid */}
         <div className="flex flex-col md:flex-row gap-8 mb-8">
             <div className="w-full md:w-1/4 space-y-6">
                 {/* Categories */}
                 <div className="bg-dark-800/60 backdrop-blur-md rounded-2xl p-4 border border-white/10 sticky top-24 shadow-lg">
                     <h3 className="font-bold text-light-100 mb-3 px-2 flex items-center gap-2">
-                        <ListIcon className="w-4 h-4 text-secondary" /> Categories
+                        <MenuIcon className="w-4 h-4 text-secondary" /> Categories
                     </h3>
                     <div className="space-y-1 max-h-[60vh] overflow-y-auto no-scrollbar">
                         <button 
@@ -541,7 +594,7 @@ const ToolsPage: React.FC<ToolsPageProps> = (props) => {
                                 onChange={(e) => setSelectedDuration(e.target.value)}
                                 className="w-full bg-dark-900/80 border border-white/10 rounded-lg px-3 py-2 text-sm text-light-200 focus:ring-1 focus:ring-secondary outline-none"
                             >
-                                {DURATIONS.map(d => <option key={d} value={d}>{d}</option>)}
+                                {availableDurations.map(d => <option key={d} value={d}>{d}</option>)}
                             </select>
                         </div>
                         <div>
@@ -551,7 +604,7 @@ const ToolsPage: React.FC<ToolsPageProps> = (props) => {
                                 onChange={(e) => setSelectedTag(e.target.value)}
                                 className="w-full bg-dark-900/80 border border-white/10 rounded-lg px-3 py-2 text-sm text-light-200 focus:ring-1 focus:ring-secondary outline-none"
                             >
-                                {TAGS.map(t => <option key={t} value={t}>{t}</option>)}
+                                {availableTags.map(t => <option key={t} value={t}>{t}</option>)}
                             </select>
                         </div>
                         

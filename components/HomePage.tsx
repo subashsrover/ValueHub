@@ -1,11 +1,11 @@
 
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { motion, useScroll, useTransform, useSpring, useMotionValue } from 'framer-motion';
 import { BENEFITS } from '../constants';
 import type { Benefit } from '../types';
-import { CheckCircleIcon, SparklesIcon, ShieldCheckIcon, ZapIcon, SearchIcon, StarIcon } from './icons';
+import { CheckCircleIcon, SparklesIcon, ShieldCheckIcon, StarIcon, LogoIcon } from './icons';
 
 interface HomePageProps {
   onExploreClick: () => void;
@@ -77,138 +77,92 @@ const HeroParallax = ({ onExploreClick }: { onExploreClick: () => void }) => {
         <section 
             ref={ref} 
             onMouseMove={handleMouseMove}
-            className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 pb-32"
+            className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20"
         >
-            <motion.div style={{ y, opacity }} className="container mx-auto px-6 relative z-10">
-                <div className="flex flex-col lg:flex-row items-center gap-12">
-                    
-                    {/* Text Content */}
-                    <div className="lg:w-1/2 text-center lg:text-left">
-                        <motion.div
-                            initial={{ opacity: 0, x: -50 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.8 }}
-                        >
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 border border-secondary/30 text-secondary text-xs font-bold uppercase tracking-wider mb-6">
-                                <SparklesIcon className="w-4 h-4" />
-                                <span>The Future of Discovery</span>
-                            </div>
-                            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight text-light-100">
-                                Discover Tools from <br />
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary via-blue-400 to-purple-400 animate-gradient-x">
-                                    Another Dimension
-                                </span>
-                            </h1>
-                            <p className="text-lg md:text-xl text-light-200/80 mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                                A curated universe of top-tier software. We provide the essentials to build, create, and innovate faster than ever before.
-                            </p>
-                            
-                            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                                <button 
-                                    onClick={onExploreClick}
-                                    className="group relative px-8 py-4 bg-secondary rounded-full text-white font-bold text-lg overflow-hidden shadow-lg hover:shadow-secondary/50 transition-all hover:scale-105"
-                                >
-                                    <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1s_infinite]"></div>
-                                    <span className="relative flex items-center gap-2">
-                                        Explore Tools <ZapIcon className="w-5 h-5" />
-                                    </span>
-                                </button>
-                                <button className="px-8 py-4 bg-white/5 border border-white/10 rounded-full text-light-100 font-bold text-lg hover:bg-white/10 transition-all hover:scale-105 backdrop-blur-sm">
-                                    How it Works
-                                </button>
-                            </div>
-                        </motion.div>
-                    </div>
+            {/* Background Animated Elements (Parallax Layer) */}
+            <motion.div style={{ x: mouseXSpring, y: mouseYSpring }} className="absolute inset-0 z-0 pointer-events-none">
+                 {/* Central Hub */}
+                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-3xl animate-pulse"></div>
+                 
+                 {/* Orbiting Elements */}
+                 <FloatingCard className="top-1/4 left-1/4" delay={0}>
+                     <LogoIcon className="w-12 h-12 text-secondary" />
+                 </FloatingCard>
+                 <FloatingCard className="bottom-1/3 right-1/4" delay={2}>
+                     <CheckCircleIcon className="w-10 h-10 text-green-400" />
+                 </FloatingCard>
+                 <FloatingCard className="top-1/3 right-1/3" delay={1} speed={1.5}>
+                     <SparklesIcon className="w-8 h-8 text-purple-400" />
+                 </FloatingCard>
+                 <FloatingCard className="bottom-1/4 left-1/3" delay={3} speed={0.8}>
+                     <ShieldCheckIcon className="w-8 h-8 text-blue-400" />
+                 </FloatingCard>
+            </motion.div>
 
-                    {/* 3D Visuals */}
-                    <div className="lg:w-1/2 relative h-[500px] w-full perspective-1000">
-                         {/* Abstract Center Glow */}
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-secondary/20 rounded-full blur-3xl animate-pulse"></div>
+            {/* Hero Content */}
+            <motion.div 
+                style={{ y, opacity }}
+                className="relative z-10 text-center max-w-5xl mx-auto px-6"
+            >
+                <motion.div
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                >
+                    <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
+                        <span className="block text-light-100">Empower Your</span>
+                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-secondary via-blue-400 to-purple-500 animate-gradient-x">Digital Workflow</span>
+                    </h1>
+                </motion.div>
+                
+                <motion.p 
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.3, duration: 0.8 }}
+                    className="text-xl md:text-2xl text-light-200/80 mb-10 max-w-3xl mx-auto leading-relaxed"
+                >
+                    Discover a curated universe of top-tier software tools. <br className="hidden md:block" />
+                    Build, create, and innovate with the best resources in the industry.
+                </motion.p>
 
-                        {/* Floating Elements controlled by mouse */}
-                        <motion.div 
-                            style={{ x: mouseXSpring, y: mouseYSpring, rotateX: mouseYSpring, rotateY: mouseXSpring }}
-                            className="w-full h-full relative transform-style-3d"
-                        >
-                            {/* Central Hub Visual - CSS 3D Sphere Representation */}
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 shadow-[inset_-10px_-10px_20px_rgba(0,0,0,0.5),_0_0_20px_rgba(59,130,246,0.5)] z-20 flex items-center justify-center">
-                                <ZapIcon className="w-20 h-20 text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" />
-                            </div>
-                            
-                            {/* Orbiting Ring */}
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 border border-white/10 rounded-full border-dashed animate-[spin_20s_linear_infinite]"></div>
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 border border-white/5 rounded-full animate-[spin_30s_linear_infinite_reverse]"></div>
-
-                            {/* Floating Cards */}
-                            <FloatingCard className="top-10 left-10 z-10" delay={0} speed={1.2}>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold">AI</div>
-                                    <div>
-                                        <div className="h-2 w-16 bg-white/20 rounded mb-1"></div>
-                                        <div className="h-2 w-10 bg-white/10 rounded"></div>
-                                    </div>
-                                </div>
-                            </FloatingCard>
-
-                            <FloatingCard className="bottom-20 right-10 z-30" delay={1} speed={1.1}>
-                                <div className="flex flex-col items-center gap-2 p-2">
-                                    <div className="flex gap-1">
-                                        <StarIcon className="w-4 h-4 text-yellow-400" filled />
-                                        <StarIcon className="w-4 h-4 text-yellow-400" filled />
-                                        <StarIcon className="w-4 h-4 text-yellow-400" filled />
-                                        <StarIcon className="w-4 h-4 text-yellow-400" filled />
-                                        <StarIcon className="w-4 h-4 text-yellow-400" filled />
-                                    </div>
-                                    <div className="text-xs font-bold text-light-100">Top Rated</div>
-                                </div>
-                            </FloatingCard>
-
-                            <FloatingCard className="top-20 right-0 z-0 blur-[1px]" delay={2} speed={0.9}>
-                                <SearchIcon className="w-8 h-8 text-light-200/50" />
-                            </FloatingCard>
-
-                             <FloatingCard className="bottom-10 left-20 z-30" delay={0.5} speed={1.3}>
-                                <div className="flex items-center gap-2">
-                                   <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                                   <span className="text-sm font-bold text-light-100">Live Updates</span>
-                                </div>
-                            </FloatingCard>
-
-                        </motion.div>
-                    </div>
-                </div>
+                <motion.div 
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.5, duration: 0.8 }}
+                    className="flex flex-col sm:flex-row items-center justify-center gap-4"
+                >
+                    <button 
+                        onClick={onExploreClick}
+                        className="group relative px-8 py-4 bg-secondary text-white font-bold text-lg rounded-full overflow-hidden shadow-lg shadow-secondary/30 transition-all hover:scale-105 hover:shadow-secondary/50"
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                        <span className="relative flex items-center gap-2">
+                            Explore Tools <StarIcon className="w-5 h-5" filled />
+                        </span>
+                    </button>
+                </motion.div>
             </motion.div>
         </section>
     );
 };
 
-const HomePage: React.FC<HomePageProps> = ({ onExploreClick }) => {
+export default function HomePage({ onExploreClick }: HomePageProps) {
   return (
-    <>
-        <HeroParallax onExploreClick={onExploreClick} />
+    <div className="relative">
+      <HeroParallax onExploreClick={onExploreClick} />
 
-        {/* Benefits Section with 3D Cards */}
-        <section className="relative z-10 py-20 bg-gradient-to-b from-transparent to-dark-900/50">
-            <div className="container mx-auto px-6">
-                <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="text-center mb-16"
-                >
-                    <h2 className="text-3xl md:text-4xl font-bold text-light-100 mb-4">Why Choose Value Hub?</h2>
-                    <p className="text-light-200/60 max-w-2xl mx-auto">We go beyond a simple list. We provide an ecosystem designed for growth.</p>
-                </motion.div>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 perspective-1000">
-                    {BENEFITS.map((benefit, index) => (
-                        <BenefitCard key={index} benefit={benefit} index={index} />
-                    ))}
-                </div>
-            </div>
-        </section>
-    </>
+      {/* Benefits Section */}
+      <section className="container mx-auto px-6 py-24 relative z-10">
+         <div className="text-center mb-16">
+             <h2 className="text-3xl md:text-4xl font-bold text-light-100 mb-4">Why Choose Value Hub?</h2>
+             <p className="text-light-200/60 max-w-2xl mx-auto">We go beyond listing tools. We verify, test, and curate the best software to ensure you get maximum value.</p>
+         </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {BENEFITS.map((benefit, index) => (
+                <BenefitCard key={index} benefit={benefit} index={index} />
+            ))}
+        </div>
+      </section>
+    </div>
   );
-};
-
-export default HomePage;
+}

@@ -6,7 +6,6 @@ import { api } from '../services/api';
 import type { User, Tool } from '../types';
 import { TOOLS } from '../constants';
 import LoginPage from './LoginPage';
-import PaymentModal from './PaymentModal';
 
 // --- Safe Defaults ---
 const defaultAuthContext: AuthContextType = {
@@ -15,7 +14,6 @@ const defaultAuthContext: AuthContextType = {
   logout: async () => {},
   refreshUser: () => {},
   openLoginModal: () => {},
-  openPaymentModal: () => {},
 };
 
 const defaultThemeContext: ThemeContextType = {
@@ -56,7 +54,6 @@ interface AuthContextType {
   logout: () => Promise<void>;
   refreshUser: () => void;
   openLoginModal: () => void;
-  openPaymentModal: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>(defaultAuthContext);
@@ -128,7 +125,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
   // Auth State
   const [user, setUser] = useState<User | null>(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   // Theme State
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
@@ -375,7 +371,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
       logout, 
       refreshUser, 
       openLoginModal: () => setIsLoginModalOpen(true),
-      openPaymentModal: () => setIsPaymentModalOpen(true)
     }}>
       <ThemeContext.Provider value={{ theme, toggleTheme }}>
         <FavoritesContext.Provider value={{ favoriteTools, toggleFavorite }}>
@@ -398,18 +393,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
                             <LoginPage 
                             onLoginSuccess={() => {}} 
                             onClose={() => setIsLoginModalOpen(false)} 
-                            />
-                        )}
-                        {isPaymentModalOpen && (
-                            <PaymentModal 
-                            onClose={() => setIsPaymentModalOpen(false)} 
-                            onSuccess={() => {
-                                setIsPaymentModalOpen(false);
-                                refreshUser();
-                                alert("Congratulations! You have been upgraded to Pro.");
-                            }}
-                            planName="Value Hub Pro"
-                            price="$29.00"
                             />
                         )}
                     </RatingsContext.Provider>

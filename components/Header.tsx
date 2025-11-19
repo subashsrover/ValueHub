@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -13,7 +14,6 @@ interface HeaderProps {
   onLoginClick?: () => void;
   onLogoutClick?: () => Promise<void> | void;
   onAdminClick?: () => void;
-  onUpgradeClick?: () => void;
   theme?: 'dark' | 'light';
   onThemeToggle?: () => void;
 }
@@ -26,7 +26,6 @@ const Header: React.FC<HeaderProps> = (props) => {
   const user = props.user !== undefined ? props.user : authContext.user;
   const logout = props.onLogoutClick || authContext.logout;
   const openLoginModal = props.onLoginClick || authContext.openLoginModal;
-  const openPaymentModal = props.onUpgradeClick || authContext.openPaymentModal;
 
   const theme = props.theme !== undefined ? props.theme : themeContext.theme;
   const toggleTheme = props.onThemeToggle || themeContext.toggleTheme;
@@ -68,17 +67,6 @@ const Header: React.FC<HeaderProps> = (props) => {
             >
                 {theme === 'dark' ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
             </button>
-
-            {/* Subscription Upsell */}
-            {(!isLoggedIn || (user && user.plan === 'Free')) && (
-                <button 
-                    onClick={isLoggedIn ? openPaymentModal : openLoginModal}
-                    className="hidden sm:flex items-center gap-2 text-accent hover:text-orange-400 font-bold text-sm transition-colors"
-                >
-                    <SparklesIcon className="w-4 h-4" />
-                    <span>Upgrade to Pro</span>
-                </button>
-            )}
 
             {isLoggedIn ? (
               <div className="flex items-center gap-4">

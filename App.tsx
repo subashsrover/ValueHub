@@ -11,7 +11,6 @@ import TermsPage from './components/TermsPage';
 import DisclaimerPage from './components/DisclaimerPage';
 import EULAPage from './components/EULAPage';
 import AdminDashboard from './components/AdminDashboard';
-import PaymentModal from './components/PaymentModal';
 import ChatBot from './components/ChatBot';
 import AnimatedBackground from './components/AnimatedBackground'; // Import
 import type { Tool, User } from './types';
@@ -26,7 +25,6 @@ const App: React.FC = () => {
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [favoriteTools, setFavoriteTools] = useState<Tool[]>([]);
   const [theme, setTheme] = useState<Theme>(
     () => (localStorage.getItem('theme') as Theme) || 'dark'
@@ -96,21 +94,6 @@ const App: React.FC = () => {
     if (currentPage === 'admin') navigateTo('home');
   };
 
-  const handleUpgradeClick = () => {
-    if (!user) {
-        setIsLoginModalOpen(true);
-    } else {
-        setIsPaymentModalOpen(true);
-    }
-  };
-
-  const handlePaymentSuccess = () => {
-    setIsPaymentModalOpen(false);
-    const updatedUser = api.getCurrentUser();
-    setUser(updatedUser);
-    alert("Congratulations! You have been upgraded to Pro.");
-  };
-
   const toggleFavoriteTool = (toolToToggle: Tool) => {
     setFavoriteTools(prevFavorites => {
         const isFavorite = prevFavorites.some(fav => fav.name === toolToToggle.name);
@@ -137,7 +120,6 @@ const App: React.FC = () => {
         onLoginClick={() => setIsLoginModalOpen(true)}
         onLogoutClick={handleLogout}
         onAdminClick={() => navigateTo('admin')}
-        onUpgradeClick={handleUpgradeClick}
         theme={theme}
         onThemeToggle={handleThemeToggle}
       />
@@ -159,7 +141,6 @@ const App: React.FC = () => {
       />
       <ChatBot />
       {isLoginModalOpen && <LoginPage onLoginSuccess={handleLoginSuccess} onClose={() => setIsLoginModalOpen(false)} />}
-      {isPaymentModalOpen && <PaymentModal onClose={() => setIsPaymentModalOpen(false)} onSuccess={handlePaymentSuccess} planName="Value Hub Pro" price="$29.00" />}
     </div>
   );
 };
