@@ -121,7 +121,7 @@ export const usePriceAlerts = () => useContext(PriceAlertsContext);
 export const useHistory = () => useContext(HistoryContext);
 export const useRatings = () => useContext(RatingsContext);
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({ children }: { children?: React.ReactNode }) {
   // Auth State
   const [user, setUser] = useState<User | null>(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);

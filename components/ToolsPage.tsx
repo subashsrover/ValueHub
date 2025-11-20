@@ -6,7 +6,7 @@ import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { TOOLS, CATEGORIES, CATEGORY_DESCRIPTIONS, TAG_COLORS } from '../constants';
 import type { Tool } from '../types';
 import { 
-    SearchIcon, StarIcon, BellIcon, CompareIcon, HeartIcon, ZapIcon, GridIcon, ListIcon, ListIcon as MenuIcon 
+    SearchIcon, StarIcon, BellIcon, CompareIcon, HeartIcon, ZapIcon, GridIcon, ListIcon, ListIcon as MenuIcon, CheckIcon 
 } from './icons';
 import { useAuth, useFavorites, usePriceAlerts, useHistory, useRatings } from './Providers';
 import Link from 'next/link';
@@ -485,38 +485,6 @@ const ToolsPage: React.FC<ToolsPageProps> = (props) => {
             </div>
         </motion.div>
         
-        {/* Active Filters Summary */}
-        {isFiltering && (
-            <div className="mb-8 max-w-4xl mx-auto flex flex-wrap items-center justify-center gap-2">
-                <span className="text-xs font-bold text-light-200 uppercase tracking-wider mr-2">Active Filters:</span>
-                {searchQuery && (
-                    <div className="flex items-center gap-1 bg-secondary/20 text-secondary text-xs px-3 py-1 rounded-full border border-secondary/30">
-                        Search: "{searchQuery}"
-                        <button onClick={() => setSearchQuery('')} className="ml-1 hover:text-white">&times;</button>
-                    </div>
-                )}
-                {selectedCategory !== 'All' && (
-                    <div className="flex items-center gap-1 bg-purple-500/20 text-purple-300 text-xs px-3 py-1 rounded-full border border-purple-500/30">
-                        Cat: {selectedCategory}
-                        <button onClick={() => setSelectedCategory('All')} className="ml-1 hover:text-white">&times;</button>
-                    </div>
-                )}
-                {selectedDuration !== 'All Durations' && (
-                    <div className="flex items-center gap-1 bg-green-500/20 text-green-300 text-xs px-3 py-1 rounded-full border border-green-500/30">
-                        {selectedDuration}
-                        <button onClick={() => setSelectedDuration('All Durations')} className="ml-1 hover:text-white">&times;</button>
-                    </div>
-                )}
-                {selectedTag !== 'All Tags' && (
-                    <div className="flex items-center gap-1 bg-orange-500/20 text-orange-300 text-xs px-3 py-1 rounded-full border border-orange-500/30">
-                        Tag: {selectedTag}
-                        <button onClick={() => setSelectedTag('All Tags')} className="ml-1 hover:text-white">&times;</button>
-                    </div>
-                )}
-                <button onClick={clearFilters} className="text-xs text-red-400 hover:underline ml-2">Clear All</button>
-            </div>
-        )}
-
         {/* Recently Viewed */}
         {recentlyViewed.length > 0 && (
             <motion.div 
@@ -559,150 +527,176 @@ const ToolsPage: React.FC<ToolsPageProps> = (props) => {
             </motion.div>
         )}
 
-        {/* Filters & Grid */}
-        <div className="flex flex-col md:flex-row gap-8 mb-8">
-            <div className="w-full md:w-1/4 space-y-6">
-                {/* Categories */}
-                <div className="bg-dark-800/60 backdrop-blur-md rounded-2xl p-4 border border-white/10 sticky top-24 shadow-lg">
-                    <h3 className="font-bold text-light-100 mb-3 px-2 flex items-center gap-2">
-                        <MenuIcon className="w-4 h-4 text-secondary" /> Categories
-                    </h3>
-                    <div className="space-y-1 max-h-[60vh] overflow-y-auto no-scrollbar">
-                        <button 
-                            onClick={() => setSelectedCategory('All')}
-                            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-200 ${selectedCategory === 'All' ? 'bg-secondary text-white shadow-md' : 'text-light-200 hover:bg-white/5'}`}
-                        >
-                            All Categories
-                        </button>
-                        {CATEGORIES.map(cat => (
-                            <button 
-                                key={cat}
-                                onClick={() => setSelectedCategory(cat)}
-                                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-200 truncate ${selectedCategory === cat ? 'bg-secondary text-white shadow-md' : 'text-light-200 hover:bg-white/5'}`}
-                                title={cat}
-                            >
-                                {cat}
-                            </button>
-                        ))}
-                    </div>
-                    
-                     <div className="mt-6 pt-6 border-t border-white/10 space-y-4">
-                        <div>
-                            <label className="block text-xs font-bold text-light-200 mb-2 uppercase tracking-wider">Duration</label>
-                            <select 
-                                value={selectedDuration} 
-                                onChange={(e) => setSelectedDuration(e.target.value)}
-                                className="w-full bg-dark-900/80 border border-white/10 rounded-lg px-3 py-2 text-sm text-light-200 focus:ring-1 focus:ring-secondary outline-none"
-                            >
-                                {availableDurations.map(d => <option key={d} value={d}>{d}</option>)}
-                            </select>
-                        </div>
-                        <div>
-                             <label className="block text-xs font-bold text-light-200 mb-2 uppercase tracking-wider">Tags</label>
-                            <select 
-                                value={selectedTag} 
-                                onChange={(e) => setSelectedTag(e.target.value)}
-                                className="w-full bg-dark-900/80 border border-white/10 rounded-lg px-3 py-2 text-sm text-light-200 focus:ring-1 focus:ring-secondary outline-none"
-                            >
-                                {availableTags.map(t => <option key={t} value={t}>{t}</option>)}
-                            </select>
-                        </div>
-                        
-                        {isFiltering && (
-                             <button 
-                                onClick={clearFilters}
-                                className="w-full mt-2 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-semibold py-2 rounded-lg text-sm transition-colors"
-                             >
-                                Reset All Filters
-                             </button>
-                        )}
+        {/* Filter & Sorting Bar */}
+        <div className="bg-dark-800/40 p-4 rounded-xl border border-white/5 mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
+             <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
+                 {/* Category Dropdown */}
+                 <div className="relative">
+                     <select 
+                         value={selectedCategory} 
+                         onChange={(e) => setSelectedCategory(e.target.value)}
+                         className="appearance-none bg-dark-900 border border-white/10 rounded-lg pl-3 pr-8 py-2 text-sm text-light-200 focus:ring-1 focus:ring-secondary outline-none cursor-pointer hover:bg-dark-800 transition-colors max-w-[200px] truncate"
+                     >
+                         <option value="All">All Categories</option>
+                         {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                     </select>
+                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-light-200">
+                        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
                      </div>
-                </div>
-            </div>
+                 </div>
 
-            {/* Grid */}
-            <div className="w-full md:w-3/4">
-                <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-                    <p className="text-light-200 text-sm">
-                        Showing <span className="font-bold text-white">{filteredTools.length}</span> {filteredTools.length === 1 ? 'tool' : 'tools'}
-                    </p>
-                    <div className="flex gap-2 bg-dark-800/50 p-1 rounded-lg border border-white/10">
-                        <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded transition-colors ${viewMode === 'grid' ? 'bg-white/10 text-white shadow-sm' : 'text-light-200 hover:text-white'}`}>
-                            <GridIcon className="w-5 h-5" />
-                        </button>
-                        <button onClick={() => setViewMode('list')} className={`p-1.5 rounded transition-colors ${viewMode === 'list' ? 'bg-white/10 text-white shadow-sm' : 'text-light-200 hover:text-white'}`}>
-                            <ListIcon className="w-5 h-5" />
-                        </button>
-                    </div>
-                </div>
-                
-                 <div className="mb-6 text-center sm:text-left">
-                    <p className="text-sm text-light-200/80 italic bg-secondary/5 border border-secondary/10 p-3 rounded-lg inline-block">
-                        {selectedCategory === 'All' 
-                            ? "Browsing all tools. Use filters to narrow your search." 
-                            : CATEGORY_DESCRIPTIONS[selectedCategory]}
-                    </p>
-                </div>
+                 {/* Duration */}
+                 <div className="relative">
+                     <select 
+                         value={selectedDuration} 
+                         onChange={(e) => setSelectedDuration(e.target.value)}
+                         className="appearance-none bg-dark-900 border border-white/10 rounded-lg pl-3 pr-8 py-2 text-sm text-light-200 focus:ring-1 focus:ring-secondary outline-none cursor-pointer hover:bg-dark-800 transition-colors"
+                     >
+                         {availableDurations.map(d => <option key={d} value={d}>{d}</option>)}
+                     </select>
+                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-light-200">
+                        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                     </div>
+                 </div>
+                 
+                 {/* Tags */}
+                 <div className="relative">
+                     <select 
+                         value={selectedTag} 
+                         onChange={(e) => setSelectedTag(e.target.value)}
+                         className="appearance-none bg-dark-900 border border-white/10 rounded-lg pl-3 pr-8 py-2 text-sm text-light-200 focus:ring-1 focus:ring-secondary outline-none cursor-pointer hover:bg-dark-800 transition-colors"
+                     >
+                         {availableTags.map(t => <option key={t} value={t}>{t}</option>)}
+                     </select>
+                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-light-200">
+                        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                     </div>
+                 </div>
 
-                <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-                    {filteredTools.map((tool, idx) => (
-                        <motion.div
-                            key={tool.name}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.4, delay: idx * 0.05 }}
-                        >
-                            <ToolCard 
-                                tool={tool}
-                                onClick={() => handleToolClick(tool)}
-                                isLoggedIn={isLoggedIn}
-                                isFavorite={favoriteTools.some(fav => fav.name === tool.name)}
-                                onFavoriteClick={() => onToggleFavorite(tool)}
-                                stats={ratingsContext?.getToolStats?.(tool.name) || { average: 0, count: 0 }}
-                                hasAlert={!!getAlert(tool.name)}
-                                onAlertClick={() => setAlertingTool(tool.name, tool.offerPrice)}
-                                isCompareSelected={compareList.includes(tool.name)}
-                                onCompareToggle={() => toggleCompare(tool.name)}
-                            />
-                        </motion.div>
-                    ))}
-                </div>
-                
-                {filteredTools.length === 0 && (
-                    <div className="text-center py-20 bg-dark-800/50 rounded-xl border border-dashed border-white/10 backdrop-blur-sm">
-                        <div className="mb-4 bg-white/5 w-16 h-16 rounded-full flex items-center justify-center mx-auto">
-                             <SearchIcon className="w-8 h-8 text-light-200/30" />
-                        </div>
-                        <p className="text-xl text-light-200 font-bold">No tools found</p>
-                        <p className="text-light-200/60 mt-2">Try adjusting your filters or search query.</p>
-                        <button 
-                            onClick={clearFilters}
-                            className="mt-4 text-secondary hover:underline font-medium"
-                        >
-                            Clear all filters
-                        </button>
+                 {isFiltering && (
+                    <button 
+                        onClick={clearFilters}
+                        className="text-xs font-bold text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 px-3 py-2 rounded-lg transition-colors"
+                    >
+                        Reset Filters
+                    </button>
+                 )}
+             </div>
+
+             <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
+                 <p className="text-light-200 text-sm">
+                     Showing <span className="font-bold text-white">{filteredTools.length}</span> tool{filteredTools.length !== 1 && 's'}
+                 </p>
+                 <div className="flex gap-1 bg-dark-900 p-1 rounded-lg border border-white/5">
+                     <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded transition-colors ${viewMode === 'grid' ? 'bg-white/10 text-white shadow-sm' : 'text-light-200 hover:text-white'}`}>
+                         <GridIcon className="w-5 h-5" />
+                     </button>
+                     <button onClick={() => setViewMode('list')} className={`p-1.5 rounded transition-colors ${viewMode === 'list' ? 'bg-white/10 text-white shadow-sm' : 'text-light-200 hover:text-white'}`}>
+                         <ListIcon className="w-5 h-5" />
+                     </button>
+                 </div>
+             </div>
+        </div>
+        
+        {/* Active Filter Summary - Chips */}
+        {isFiltering && (
+            <div className="flex flex-wrap gap-2 mb-6">
+                {searchQuery && (
+                    <div className="flex items-center gap-1 bg-secondary/20 text-secondary text-xs px-3 py-1 rounded-full border border-secondary/30 animate-fade-in">
+                        Search: "{searchQuery}"
+                        <button onClick={() => setSearchQuery('')} className="ml-1 hover:text-white font-bold">&times;</button>
                     </div>
                 )}
-                
-                <div className="mt-12 text-center">
-                     <p className="text-light-200 mb-4">Don't see what you're looking for?</p>
-                     {props.onEnquireClick ? (
-                        <button
-                            onClick={props.onEnquireClick}
-                            className="bg-dark-800/80 border border-white/10 text-light-100 font-bold py-3 px-8 rounded-full text-lg hover:bg-secondary hover:border-secondary transition-all duration-300 backdrop-blur-sm"
-                        >
-                            Enquire for a Tool
-                        </button>
-                     ) : (
-                         <Link
-                            href="/enquire"
-                            className="inline-block bg-dark-800/80 border border-white/10 text-light-100 font-bold py-3 px-8 rounded-full text-lg hover:bg-secondary hover:border-secondary transition-all duration-300 backdrop-blur-sm"
-                        >
-                            Enquire for a Tool
-                        </Link>
-                     )}
+                {selectedCategory !== 'All' && (
+                    <div className="flex items-center gap-1 bg-purple-500/20 text-purple-300 text-xs px-3 py-1 rounded-full border border-purple-500/30 animate-fade-in">
+                        Category: {selectedCategory}
+                        <button onClick={() => setSelectedCategory('All')} className="ml-1 hover:text-white font-bold">&times;</button>
+                    </div>
+                )}
+                {selectedDuration !== 'All Durations' && (
+                    <div className="flex items-center gap-1 bg-green-500/20 text-green-300 text-xs px-3 py-1 rounded-full border border-green-500/30 animate-fade-in">
+                        Duration: {selectedDuration}
+                        <button onClick={() => setSelectedDuration('All Durations')} className="ml-1 hover:text-white font-bold">&times;</button>
+                    </div>
+                )}
+                {selectedTag !== 'All Tags' && (
+                    <div className="flex items-center gap-1 bg-orange-500/20 text-orange-300 text-xs px-3 py-1 rounded-full border border-orange-500/30 animate-fade-in">
+                        Tag: {selectedTag}
+                        <button onClick={() => setSelectedTag('All Tags')} className="ml-1 hover:text-white font-bold">&times;</button>
+                    </div>
+                )}
+            </div>
+        )}
+        
+         {/* Category Description (Dynamic) */}
+         <div className="mb-6">
+            <p className="text-sm text-light-200/80 italic bg-secondary/5 border border-secondary/10 p-3 rounded-lg inline-block">
+                {selectedCategory === 'All' 
+                    ? "Browsing all tools. Use filters to narrow your search." 
+                    : CATEGORY_DESCRIPTIONS[selectedCategory]}
+            </p>
+        </div>
+
+        {/* Main Content Grid - Full Width */}
+        <div className="w-full">
+            <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
+                {filteredTools.map((tool, idx) => (
+                    <motion.div
+                        key={tool.name}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.4, delay: idx * 0.05 }}
+                    >
+                        <ToolCard 
+                            tool={tool}
+                            onClick={() => handleToolClick(tool)}
+                            isLoggedIn={isLoggedIn}
+                            isFavorite={favoriteTools.some(fav => fav.name === tool.name)}
+                            onFavoriteClick={() => onToggleFavorite(tool)}
+                            stats={ratingsContext?.getToolStats?.(tool.name) || { average: 0, count: 0 }}
+                            hasAlert={!!getAlert(tool.name)}
+                            onAlertClick={() => setAlertingTool(tool.name, tool.offerPrice)}
+                            isCompareSelected={compareList.includes(tool.name)}
+                            onCompareToggle={() => toggleCompare(tool.name)}
+                        />
+                    </motion.div>
+                ))}
+            </div>
+            
+            {filteredTools.length === 0 && (
+                <div className="text-center py-20 bg-dark-800/50 rounded-xl border border-dashed border-white/10 backdrop-blur-sm">
+                    <div className="mb-4 bg-white/5 w-16 h-16 rounded-full flex items-center justify-center mx-auto">
+                         <SearchIcon className="w-8 h-8 text-light-200/30" />
+                    </div>
+                    <p className="text-xl text-light-200 font-bold">No tools found</p>
+                    <p className="text-light-200/60 mt-2">Try adjusting your filters or search query.</p>
+                    <button 
+                        onClick={clearFilters}
+                        className="mt-4 text-secondary hover:underline font-medium"
+                    >
+                        Clear all filters
+                    </button>
                 </div>
+            )}
+            
+            <div className="mt-12 text-center">
+                 <p className="text-light-200 mb-4">Don't see what you're looking for?</p>
+                 {props.onEnquireClick ? (
+                    <button
+                        onClick={props.onEnquireClick}
+                        className="bg-dark-800/80 border border-white/10 text-light-100 font-bold py-3 px-8 rounded-full text-lg hover:bg-secondary hover:border-secondary transition-all duration-300 backdrop-blur-sm"
+                    >
+                        Enquire for a Tool
+                    </button>
+                 ) : (
+                     <Link
+                        href="/enquire"
+                        className="inline-block bg-dark-800/80 border border-white/10 text-light-100 font-bold py-3 px-8 rounded-full text-lg hover:bg-secondary hover:border-secondary transition-all duration-300 backdrop-blur-sm"
+                    >
+                        Enquire for a Tool
+                    </Link>
+                 )}
             </div>
         </div>
 
